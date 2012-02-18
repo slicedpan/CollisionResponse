@@ -12,7 +12,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A98B8BD9-7E9B-45B8-8410-F712A2B1B641}</ProjectGuid>
-    <RootNamespace>ParticleSystem</RootNamespace>
+    <RootNamespace>CollisionResponse</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

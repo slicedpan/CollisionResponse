@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NarrowPhase", "NarrowPhase\NarrowPhase.vcxproj", "{A98B8BD9-7E9B-45B8-8410-F712A2B1B641}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CollisionResponse", "CollisionResponse\CollisionResponse.vcxproj", "{A98B8BD9-7E9B-45B8-8410-F712A2B1B641}"
 	ProjectSection(ProjectDependencies) = postProject
 		{4604102D-3D29-4913-BBCB-5CC09BAC374D} = {4604102D-3D29-4913-BBCB-5CC09BAC374D}
 	EndProjectSection
