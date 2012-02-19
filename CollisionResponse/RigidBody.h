@@ -51,6 +51,7 @@ private:
 	Vec4 orientation;
 	Vec4 angularVelocity;
 	Mat4 transform;	
+	Mat3 invInertiaTensor;
 	AABB currentBB;
 	float invMass;
 	ConvexPolyhedron* poly;

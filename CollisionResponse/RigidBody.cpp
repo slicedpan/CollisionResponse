@@ -12,6 +12,7 @@ RigidBody::RigidBody(void) :
 	isKinematic(false)
 {
 	transform.MakeDiag();
+	invInertiaTensor.MakeDiag();
 	baseBB.SetMax(Vec3(1, 1, 1));
 	baseBB.SetMin(Vec3(-1, -1, -1));
 }
@@ -59,7 +60,5 @@ void RigidBody::ApplyContactImpulse(std::vector<Contact>& contacts, RigidBody* o
 {
 	if (isKinematic)
 		return;
-
+	
 }
-
-
