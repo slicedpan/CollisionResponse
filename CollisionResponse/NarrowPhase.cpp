@@ -2,6 +2,7 @@
 #include "PhysicsSystem.h"
 #include "VoronoiSolver.h"
 #include "ConvexPolyhedron.h"
+#include <algorithm>
 
 NarrowPhase::NarrowPhase(void)
 {
@@ -14,18 +15,27 @@ NarrowPhase::~NarrowPhase(void)
 
 void NarrowPhase::CollidePairs(std::vector<NarrowPhasePair>& pairs)
 {
+	RigidBody* body1, *body2;
 	contacts.clear();
 	if (pairs.size() == 0)
 		return;
 	for (int i = 0; i < pairs.size(); ++i)
-	{
-		Contact& contact = solver->GetContact();
-		contacts.push_back(contact);
-
+	{		
 		if (solver->Collide(pairs[i].p1, pairs[i].p2))
 		{			
-			pairs[i].p1->OnNarrowPhase(pairs[i].p2, contact.Reverse());
-			pairs[i].p2->OnNarrowPhase(pairs[i].p1, contact);
+			std::vector<Contact>& pairContacts = solver->GetContacts();			
+			std::sort(pairContacts.begin(), pairContacts.end(), DepthSort);
+			contacts.insert(contacts.end(), pairContacts.begin(), pairContacts.end());
+			body1 = pairs[i].p1->GetRigidBody();
+			body2 = pairs[i].p2->GetRigidBody();
+			pairs[i].p1->OnNarrowPhase(pairs[i].p2, pairContacts);
+			pairs[i].p2->OnNarrowPhase(pairs[i].p1, pairContacts);
+
+			if (body1 && body2)
+			{
+				pairs[i].p1->ApplyContactImpulse(pairContacts, body2);
+				pairs[i].p2->ApplyContactImpulse(pairContacts, body1);
+			}
 		}
 
 	}

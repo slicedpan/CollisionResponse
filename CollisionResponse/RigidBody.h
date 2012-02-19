@@ -3,6 +3,7 @@
 #include <svl\SVL.h>
 #include "Quaternion.h"
 #include "AABB.h"
+#include <vector>
 
 class ConvexPolyhedron;
 struct Contact;
@@ -14,7 +15,8 @@ public:
 	~RigidBody(void);
 	void ApplyImpulse(Vec3 impulse);
 	void ApplyForce(Vec3 force);
-	void SetMass(float mass);
+	void SetInverseMass(float invMass);
+	float GetInverseMass() { return invMass; }
 	void SetPosition(Vec3 position);
 	Vec3& GetVelocity();
 	Vec3& GetPosition();
@@ -36,6 +38,8 @@ public:
 	virtual void OnUpdateTransform() {}
 	virtual bool OnBroadPhaseCollide(RigidBody* other) { return false; }	//true to pass to narrowphase
 	virtual ConvexPolyhedron* GetPoly() { return 0; }
+	void ApplyContactImpulse(std::vector<Contact>& contacts, RigidBody* other);
+	bool isKinematic;
 protected:
 	AABB baseBB;
 	Vec4 debugColour;
@@ -48,7 +52,8 @@ private:
 	Vec4 angularVelocity;
 	Mat4 transform;	
 	AABB currentBB;
-	float mass;
+	float invMass;
+	ConvexPolyhedron* poly;
 };
 
 inline void RigidBody::SetPosition(Vec3 position)
@@ -72,7 +77,6 @@ inline Vec3& RigidBody::GetVelocity()
 inline Vec3& RigidBody::GetPosition() {return position;}
 inline Vec3& RigidBody::GetAcceleration() {return acceleration;}
 inline Vec3& RigidBody::GetLastPosition() {return lastPosition;}
-inline void RigidBody::SetMass(float mass) {this->mass = mass;}
 
 inline Vec4& RigidBody::GetOrientation() {return orientation;}
 inline Vec4& RigidBody::GetAngularVelocity() {return angularVelocity;}
@@ -82,7 +86,7 @@ inline Vec4& RigidBody::GetDebugColour() {return debugColour;}
 
 inline void RigidBody::ApplyForce(Vec3 force)
 {
-	acceleration += force / mass;
+	acceleration += force * invMass;
 }
 
 inline void RigidBody::ApplyImpulse(Vec3 impulse)

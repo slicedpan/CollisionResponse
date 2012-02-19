@@ -10,9 +10,9 @@ public:
 	BruteForceSolver(void);
 	~BruteForceSolver(void);
 	bool Collide(ConvexPolyhedron* p1, ConvexPolyhedron* p2);
-	Contact& GetContact() { return lastContact; }
+	std::vector<Contact>& GetContacts() { return contacts; }
 private:
 	bool Intersects(Vec3& point, Triangle& tri);
-	Contact lastContact;
+	std::vector<Contact> contacts;
 };
 

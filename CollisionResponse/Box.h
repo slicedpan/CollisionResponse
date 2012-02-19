@@ -18,7 +18,7 @@ public:
 	void Update(float msSinceLast);
 	void Init();
 	void OnUpdateTransform();
-	void OnNarrowPhase(ConvexPolyhedron* other, Contact contact);
+	void OnNarrowPhase(ConvexPolyhedron* other, std::vector<Contact>& contacts);
 	ConvexPolyhedron* GetPoly() { return this; }
 	bool OnBroadPhaseCollide(RigidBody* other) { return true; }
 private:

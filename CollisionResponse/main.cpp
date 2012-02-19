@@ -107,9 +107,8 @@ void setup()
 		lastKeystate[i] = false;
 	}
 	glutSetCursor(GLUT_CURSOR_NONE);
-	groundPlane = new Plane(Vec3(0.0, 1.0, 0.0), Vec3(0.0, 0.0, 0.0));
-	PhysicsSystem::GetCurrentInstance()->AddCollidable(groundPlane);
-
+	groundPlane = new Plane(Vec3(0.0, 1.0, 0.0), Vec3(0.0, 5.0, 0.0));
+	PhysicsSystem::GetCurrentInstance()->AddRigidBody(groundPlane);
 	for (int i = 0; i < numBoxes; ++i)
 	{
 		AddBox();
@@ -169,8 +168,7 @@ void display ()
 	glLoadIdentity();
 	
 	glMultMatrixf(camera->GetViewTransform().Ref()); //apply camera transform
-	glLightfv(GL_LIGHT0, GL_POSITION, lightPos.Ref());
-	
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPos.Ref());	
 	
 	groundPlane->Draw();
 

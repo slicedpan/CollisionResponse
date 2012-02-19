@@ -68,6 +68,7 @@
     <ClCompile Include="CentralForce.cpp" />
     <ClCompile Include="ColouredParticle.cpp" />
     <ClCompile Include="Box.cpp" />
+    <ClCompile Include="ContactManifold.cpp" />
     <ClCompile Include="ConvexPolyhedron.cpp" />
     <ClCompile Include="DefaultDebugDrawer.cpp" />
     <ClCompile Include="GravitationalForce.cpp" />
@@ -89,6 +90,7 @@
     <ClInclude Include="ColouredParticle.h" />
     <ClInclude Include="Contact.h" />
     <ClInclude Include="Box.h" />
+    <ClInclude Include="ContactManifold.h" />
     <ClInclude Include="ConvexPolyhedron.h" />
     <ClInclude Include="DefaultDebugDrawer.h" />
     <ClInclude Include="GravitationalForce.h" />

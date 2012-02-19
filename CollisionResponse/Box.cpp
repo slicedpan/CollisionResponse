@@ -26,6 +26,7 @@ void Box::Init()
 	TriFromQuad(triangles + 6, triangles + 7, 1, 5, 6, 2);
 	TriFromQuad(triangles + 8, triangles + 9, 2, 6, 7, 3);
 	TriFromQuad(triangles + 10, triangles + 11, 3, 7, 4, 0);
+	SetRigidBody(this);
 }
 
 Box::~Box(void)
@@ -111,7 +112,7 @@ void Box::OnUpdateTransform()
 	ApplyTransform(GetTransform());
 }
 
-void Box::OnNarrowPhase(ConvexPolyhedron* other, Contact contact)
+void Box::OnNarrowPhase(ConvexPolyhedron* other, std::vector<Contact>& contacts)
 {
 	RigidBody::SetDebugColour(Vec4(0, 0.7, 0.7, 1));
 }

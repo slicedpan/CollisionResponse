@@ -12,6 +12,7 @@ Tetrahedron::Tetrahedron(Vec3 centre, float radius) : ConvexPolyhedron(4, 4)
 	int indices[12] = {0, 1, 2, 0, 3, 2, 2, 3, 1, 3, 1, 0};
 	InitialiseTris(indices);
 	baseBB.InitFromPoints(localPoints, 4);
+	SetRigidBody(this);
 }
 
 Tetrahedron::~Tetrahedron(void)

@@ -1,5 +1,6 @@
 #include "ConvexPolyhedron.h"
 #include "Triangle.h"
+#include "RigidBody.h"
 
 ConvexPolyhedron::ConvexPolyhedron(int numPoints, int numTris)
 	: centreComputed(false),
@@ -74,4 +75,10 @@ void ConvexPolyhedron::InitialiseTris(int* indices)
 			++count;
 		}
 	}
+}
+
+void ConvexPolyhedron::ApplyContactImpulse(std::vector<Contact>& contacts, RigidBody* other)
+{
+	if (body)
+		body->ApplyContactImpulse(contacts, other);
 }

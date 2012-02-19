@@ -26,11 +26,10 @@ void PhysicsSystem::DrawDebug()
 		ConvexPolyhedron* poly = rigidBodies[i]->GetPoly();
 		if (poly)
 		{
-			//debugDrawer->DrawPoly(poly);
+			debugDrawer->DrawPoly(poly);
 			debugDrawer->DrawTriMesh(poly->GetTriangles(), poly->GetNumberOfTriangles(), poly->GetDebugColour());
 		}
 	}
-
 	debugDrawer->DrawContacts(narrowPhase.GetContacts());
 }
 
@@ -55,11 +54,14 @@ void PhysicsSystem::Integrate(float timeStep)
 	for (int i = 0; i < rigidBodies.size(); ++i)
 	{
 		rigidBodies[i]->SetDebugColour(Vec4(1, 1, 1, 1));
-		rigidBodies[i]->SetPosition((2 * rigidBodies[i]->GetPosition()) - rigidBodies[i]->GetLastPosition() + rigidBodies[i]->GetAcceleration() * timeSquared);
-		rigidBodies[i]->SetOrientation(qMultiply(rigidBodies[i]->GetOrientation(), rigidBodies[i]->GetAngularVelocity()));
-		rigidBodies[i]->CalculateTransform();
-		rigidBodies[i]->CalculateBB();
-		rigidBodies[i]->OnUpdateTransform();
+		if (!rigidBodies[i]->isKinematic)
+		{
+			rigidBodies[i]->SetPosition((2 * rigidBodies[i]->GetPosition()) - rigidBodies[i]->GetLastPosition() + rigidBodies[i]->GetAcceleration() * timeSquared);
+			rigidBodies[i]->SetOrientation(qMultiply(rigidBodies[i]->GetOrientation(), rigidBodies[i]->GetAngularVelocity()));
+			rigidBodies[i]->CalculateTransform();
+			rigidBodies[i]->CalculateBB();
+			rigidBodies[i]->OnUpdateTransform();
+		}
 	}	
 	broadPhase.GenerateCollisions();
 	std::vector<BroadPhasePair>& pairs = broadPhase.GetPairs();

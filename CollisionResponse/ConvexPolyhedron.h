@@ -2,8 +2,10 @@
 
 #include <svl\SVL.h>
 #include "Contact.h"
+#include <vector>
 
 struct Triangle;
+class RigidBody;
 
 class ConvexPolyhedron
 {
@@ -17,11 +19,14 @@ public:
 	Vec3 GetCentre();	
 	void ApplyTransform(const Mat4& transform);
 	void CalculateNormals();
-	virtual void OnNarrowPhase(ConvexPolyhedron* other, Contact contact) {}
+	virtual void OnNarrowPhase(ConvexPolyhedron* other, std::vector<Contact>& contact) {}
 	virtual void Init()	{}
 	void InitialiseTris(int* indices);
 	void SetDebugColour(Vec4& colour) { debugColour = colour; }
 	Vec4& GetDebugColour() { return debugColour; }
+	void SetRigidBody(RigidBody* body) { this->body = body; }
+	RigidBody* GetRigidBody() { return body; }
+	void ApplyContactImpulse(std::vector<Contact>& contacts, RigidBody* other);
 protected:
 	bool centreComputed;
 	int numTris;
@@ -32,5 +37,6 @@ protected:
 	Vec3 centre;
 	Vec3 localCentre;
 	Vec4 debugColour;
+	RigidBody* body;
 };
 

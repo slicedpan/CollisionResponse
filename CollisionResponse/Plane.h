@@ -1,9 +1,10 @@
 #pragma once
 
 #include "svl/svl.h"
-#include "ICollidable.h"
+#include "RigidBody.h"
+#include "ConvexPolyhedron.h"
 
-class Plane : public ICollidable
+class Plane : public RigidBody, public ConvexPolyhedron
 {
 public:
 	Plane(Vec3 normal, Vec3 position);
@@ -28,6 +29,9 @@ public:
 	}
 	Vec3 GetRestoringForce(Vec3 point);
 	Contact * GetContact(Vec3& point);
+	bool OnBroadPhaseCollide(RigidBody* other) { return true; }
+	void OnUpdateTransform() { ApplyTransform(GetTransform()); }
+	ConvexPolyhedron* GetPoly() { return this; }
 private:
 	Vec3 normal;
 	Vec3 position;

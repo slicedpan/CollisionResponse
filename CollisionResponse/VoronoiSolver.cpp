@@ -10,44 +10,42 @@ VoronoiSolver::~VoronoiSolver(void)
 {
 }
 
-bool VoronoiSolver::Check(ConvexPolyhedron* poly1, ConvexPolyhedron* poly2)
+void VoronoiSolver::Check(ConvexPolyhedron* poly1, ConvexPolyhedron* poly2)
 {
 	Vec3 p1 = poly1->GetCentre();
 	Vec3 p2 = poly2->GetCentre();
 	Vec3 d = p1 - p2;
 
 	Triangle* tris1 = poly1->GetTriangles();
-	Vec3* points2 = poly2->GetPoints();	
+	Vec3* points2 = poly2->GetPoints();		
 
 	for (int i = 0; i < poly2->GetNumberOfPoints(); ++i)
 	{
 		Vec3& point = points2[i];
 		if (dot(point - p2, d) < 0)
 			continue;
-		if (minDist < 0.001f)
-		{
-			lastContact.Normal.Normalise();	//we only need to do this here
-			return true;
-		}
 		for (int j = 0; j < poly1->GetNumberOfTriangles(); ++j)
 		{
 			Triangle& tri = tris1[j];
-			int index = VertexVoronoi(point, tri);
 
 			if (dot(tri.normal, d) > 0)
 				continue;
 
+			int index = VertexVoronoi(point, tri);
 			if (index >= 0)
 			{
 				float curDist = len(point - tri[index]);
-				if (curDist < minDist)
+				if (curDist < thresholdDistance)
 				{
-					minDist = curDist;
 					lastContact.Point = tri[index];
 					lastContact.Normal = point - lastContact.Point;
+					lastContact.Depth = 0.0f;
+					contacts.push_back(lastContact);
+					colliding = true;
 				}
 				continue;	//point is in vertex voronoi region of this triangle
 			} 
+
 			index = EdgeVoronoi(point, tri);
 			if (index >= 0)
 			{
@@ -57,42 +55,44 @@ bool VoronoiSolver::Check(ConvexPolyhedron* poly1, ConvexPolyhedron* poly2)
 				u.Normalise();
 				edgePoint = tri[index] + u * dot(point - tri[index], u);
 				float curDist = len(edgePoint - point);
-				if (curDist < minDist)
-				{
-					minDist = curDist;
+				if (curDist < thresholdDistance)
+				{					
 					lastContact.Point = edgePoint;
 					lastContact.Normal = point - edgePoint;
+					lastContact.Depth = 0.0f;
+					contacts.push_back(lastContact);
+					colliding = true;
 				}
 				continue;	//point is in edge voronoi region
 			}
 			//otherwise we are in face voronoi region
 			Vec3 facePoint = point - tri.normal * dot(point - tri[0], tri.normal);
-			float curDist = len(facePoint - point);
-			if (dot(point - facePoint, tri.normal) < 0)
-			{	
-				minDist = 0;
+			float depth = dot(point - facePoint, tri.normal);
+			if (depth < 0)
+			{					
 				lastContact.Point = facePoint;
 				lastContact.Normal = tri.normal;
+				lastContact.Depth = -depth;
+				contacts.push_back(lastContact);
+				colliding = true;
 				break;
 			}
-			if (curDist < minDist)
-			{
-				minDist = curDist;
-				lastContact.Point = facePoint;
-				lastContact.Normal = tri.normal;
-			}
 		}
-	}
-	return false;
+	}	
 }
 
 bool VoronoiSolver::Collide(ConvexPolyhedron* poly1, ConvexPolyhedron* poly2)
 {
 	minDist = FLT_MAX;
-	if (Check(poly1, poly2))
-		return true;
-	lastContact = lastContact.Reverse();
-	return Check(poly2, poly1);	
+	colliding = false;
+	int maxContacts = (poly1->GetNumberOfPoints() / 2) + (poly2->GetNumberOfPoints() / 2) + 2;
+	contacts.clear();
+	contacts.reserve(maxContacts);
+	lastContact.Reversed = false;
+	Check(poly1, poly2);
+	lastContact.Reversed = true;
+	Check(poly2, poly1);
+	return colliding;
 }
 
 int VoronoiSolver::VertexVoronoi(Vec3& point, Triangle& tri)

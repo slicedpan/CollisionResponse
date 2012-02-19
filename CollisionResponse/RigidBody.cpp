@@ -5,10 +5,11 @@ RigidBody::RigidBody(void) :
 	position(0, 0, 0), 
 	lastPosition(0, 0, 0), 
 	acceleration(0, 0, 0), 
-	mass(1),
+	invMass(1),
 	orientation(1.0, 0.0, 0.0, 0.0),
 	angularVelocity(1.0, 0.0, 0.0, 0.0),
-	debugColour(1.0, 1.0, 1.0, 1.0)
+	debugColour(1.0, 1.0, 1.0, 1.0),
+	isKinematic(false)
 {
 	transform.MakeDiag();
 	baseBB.SetMax(Vec3(1, 1, 1));
@@ -52,6 +53,13 @@ void RigidBody::ApplyAngularImpulse(Vec3& axis, float amount)
 	axis.Normalise();
 	Vec4 quat = Vec4(cos(amount), s * axis[0], s * axis[1], s * axis[2]);
 	ApplyAngularImpulse(quat);
+}
+
+void RigidBody::ApplyContactImpulse(std::vector<Contact>& contacts, RigidBody* other)
+{
+	if (isKinematic)
+		return;
+
 }
 
 

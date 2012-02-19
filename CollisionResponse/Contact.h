@@ -16,9 +16,12 @@ struct Contact
 	}
 	Vec3 Normal;
 	Vec3 Point;
-	Contact Reverse()
-	{
-		return Contact(-this->Normal, this->Point);
-	}
+	bool Reversed;
+	float Depth;
 };
+
+inline bool DepthSort(Contact& c1, Contact& c2)
+{
+	return c1.Depth > c2.Depth;
+}
 
