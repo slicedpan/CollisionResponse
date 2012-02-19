@@ -2,6 +2,7 @@
 #include "PhysicsSystem.h"
 #include "VoronoiSolver.h"
 #include "ConvexPolyhedron.h"
+#include "RigidBody.h"
 #include <algorithm>
 
 NarrowPhase::NarrowPhase(void)
@@ -33,8 +34,7 @@ void NarrowPhase::CollidePairs(std::vector<NarrowPhasePair>& pairs)
 
 			if (body1 && body2)
 			{
-				pairs[i].p1->ApplyContactImpulse(pairContacts, body2);
-				pairs[i].p2->ApplyContactImpulse(pairContacts, body1);
+				RigidBody::ApplyContactImpulses(pairContacts, body1, body2);
 			}
 		}
 

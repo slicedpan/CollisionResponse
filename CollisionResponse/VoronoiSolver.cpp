@@ -88,9 +88,9 @@ bool VoronoiSolver::Collide(ConvexPolyhedron* poly1, ConvexPolyhedron* poly2)
 	int maxContacts = (poly1->GetNumberOfPoints() / 2) + (poly2->GetNumberOfPoints() / 2) + 2;
 	contacts.clear();
 	contacts.reserve(maxContacts);
-	lastContact.Reversed = false;
+	lastContact.Reversed = 0;
 	Check(poly1, poly2);
-	lastContact.Reversed = true;
+	lastContact.Reversed = -1;
 	Check(poly2, poly1);
 	return colliding;
 }

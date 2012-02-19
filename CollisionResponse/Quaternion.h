@@ -54,3 +54,9 @@ inline Vec4 qMultiply(Vec4 q1, Vec4 q2)
 	retVec[3] = q1[0] * q2[3] + q1[1] * q2[2] - q1[2] * q2[1] + q1[3] * q2[0];
 	return retVec;
 }
+
+inline Vec3 qAxisAngle(Vec4 q1)
+{
+	float qwSquared = (2 * acos(q1[3])) / pow(q1[3], 2.0f);
+	return Vec3(q1[0] / qwSquared, q1[1] / qwSquared, q1[2] / qwSquared);
+}

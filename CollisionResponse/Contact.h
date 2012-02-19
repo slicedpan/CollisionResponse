@@ -16,7 +16,7 @@ struct Contact
 	}
 	Vec3 Normal;
 	Vec3 Point;
-	bool Reversed;
+	int Reversed;
 	float Depth;
 };
 

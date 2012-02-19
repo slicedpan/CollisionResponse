@@ -15,8 +15,10 @@ public:
 	~RigidBody(void);
 	void ApplyImpulse(Vec3 impulse);
 	void ApplyForce(Vec3 force);
-	void SetInverseMass(float invMass);
+	void SetInverseMass(float invMass) { this->invMass = invMass; }
 	float GetInverseMass() { return invMass; }
+	void SetRestitution(float value) { restitutionCoefficient = value; }
+	float GetRestitution() { return restitutionCoefficient; }
 	void SetPosition(Vec3 position);
 	Vec3& GetVelocity();
 	Vec3& GetPosition();
@@ -25,9 +27,11 @@ public:
 	Vec4& GetAngularVelocity();
 	Vec4& GetOrientation();
 	Mat3& GetOrientationMatrix() { return rotationMatrix; }
+	Mat3& GetInverseInertiaTensor() { return invInertiaTensor; }
 	void SetOrientation(Vec4& orientation);
 	void ApplyAngularImpulse(Vec4& angularVelocity);
 	void ApplyAngularImpulse(Vec3& axis, float amount);
+	void ApplyAngularImpulse(Vec3& axisAngle);
 	void ClearAcceleration();
 	void CalculateTransform();
 	void CalculateBB();
@@ -41,6 +45,7 @@ public:
 	virtual ConvexPolyhedron* GetPoly() { return 0; }
 	void ApplyContactImpulse(std::vector<Contact>& contacts, RigidBody* other);
 	bool isKinematic;
+	static void ApplyContactImpulses(std::vector<Contact>& contacts, RigidBody* body1, RigidBody* body2);
 protected:
 	AABB baseBB;
 	Vec4 debugColour;
@@ -57,7 +62,8 @@ private:
 	AABB currentBB;
 	float invMass;
 	ConvexPolyhedron* poly;
-	void GenerateRotationMatrix();
+	void GenerateRotationMatrix();	
+	float restitutionCoefficient;
 };
 
 inline void RigidBody::SetPosition(Vec3 position)

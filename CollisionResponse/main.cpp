@@ -108,6 +108,7 @@ void setup()
 	}
 	glutSetCursor(GLUT_CURSOR_NONE);
 	groundPlane = new Plane(Vec3(0.0, 1.0, 0.0), Vec3(0.0, 5.0, 0.0));
+	groundPlane->isKinematic = true;
 	PhysicsSystem::GetCurrentInstance()->AddRigidBody(groundPlane);
 	for (int i = 0; i < numBoxes; ++i)
 	{
