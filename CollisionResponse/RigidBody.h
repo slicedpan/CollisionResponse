@@ -24,6 +24,7 @@ public:
 	Vec3& GetLastPosition();
 	Vec4& GetAngularVelocity();
 	Vec4& GetOrientation();
+	Mat3& GetOrientationMatrix() { return rotationMatrix; }
 	void SetOrientation(Vec4& orientation);
 	void ApplyAngularImpulse(Vec4& angularVelocity);
 	void ApplyAngularImpulse(Vec3& axis, float amount);
@@ -52,9 +53,11 @@ private:
 	Vec4 angularVelocity;
 	Mat4 transform;	
 	Mat3 invInertiaTensor;
+	Mat3 rotationMatrix;
 	AABB currentBB;
 	float invMass;
 	ConvexPolyhedron* poly;
+	void GenerateRotationMatrix();
 };
 
 inline void RigidBody::SetPosition(Vec3 position)
@@ -104,5 +107,7 @@ inline void RigidBody::SetOrientation(Vec4& orientation)
 {
 	this->orientation = orientation;
 }
+
+
 
 

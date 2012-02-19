@@ -13,6 +13,7 @@ RigidBody::RigidBody(void) :
 {
 	transform.MakeDiag();
 	invInertiaTensor.MakeDiag();
+	rotationMatrix.MakeDiag();
 	baseBB.SetMax(Vec3(1, 1, 1));
 	baseBB.SetMin(Vec3(-1, -1, -1));
 }
@@ -36,6 +37,7 @@ Mat4& RigidBody::GetTransform()
 void RigidBody::CalculateTransform()
 {
 	transform = qGetTransform(orientation) * HTrans4(position);
+	GenerateRotationMatrix();
 }
 
 void RigidBody::CalculateBB()
@@ -61,4 +63,11 @@ void RigidBody::ApplyContactImpulse(std::vector<Contact>& contacts, RigidBody* o
 	if (isKinematic)
 		return;
 	
+}
+
+void RigidBody::GenerateRotationMatrix()
+{
+	memcpy(rotationMatrix.Ref(), transform.Ref(), sizeof(Real) * 3);
+	memcpy(rotationMatrix.Ref() + 3, transform.Ref() + 4, sizeof(Real) * 3);
+	memcpy(rotationMatrix.Ref() + 6, transform.Ref() + 8, sizeof(Real) * 3);
 }
