@@ -20,6 +20,7 @@ public:
 	void SetRestitution(float value) { restitutionCoefficient = value; }
 	float GetRestitution() { return restitutionCoefficient; }
 	void SetPosition(Vec3 position);
+	void UpdatePosition(Vec3 position);
 	Vec3& GetVelocity();
 	Vec3& GetPosition();
 	Vec3& GetAcceleration();
@@ -68,9 +69,14 @@ private:
 
 inline void RigidBody::SetPosition(Vec3 position)
 {	
-	Vec3 vel = GetVelocity();
+	lastPosition = position;
 	this->position = position;
-	lastPosition = this->position - vel;
+}
+
+inline void RigidBody::UpdatePosition(Vec3 position)
+{
+	lastPosition = this->position;
+	this->position = position;
 }
 
 inline void RigidBody::ClearAcceleration()
@@ -101,7 +107,7 @@ inline void RigidBody::ApplyForce(Vec3 force)
 
 inline void RigidBody::ApplyImpulse(Vec3 impulse)
 {
-	lastPosition -= impulse;
+	acceleration += impulse;
 }
 
 inline void RigidBody::ApplyAngularImpulse(Vec4& angularImpulse)

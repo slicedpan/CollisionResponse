@@ -74,7 +74,7 @@ Vec3 testVel;
 void AddBox()
 {
 	Box* box = new Box(ColouredParticleSystem::RandomVector(30.0) + Vec3(0, 15, 0), ColouredParticleSystem::RandomVector(10.0) + Vec3(5, 5, 5));
-	box->ApplyImpulse(ColouredParticleSystem::RandomVector(0.05));
+	box->ApplyImpulse(ColouredParticleSystem::RandomVector(1.0f));
 	box->ApplyAngularMomentum(ColouredParticleSystem::RandomVector(1), ((float)rand() * 0.01) / RAND_MAX);
 	box->ConvexPolyhedron::SetDebugColour(Vec4(ColouredParticleSystem::RandomVector(1), 1));
 	boxes.push_back(box);

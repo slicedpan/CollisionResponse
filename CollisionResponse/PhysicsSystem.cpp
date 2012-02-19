@@ -22,7 +22,7 @@ void PhysicsSystem::DrawDebug()
 	for (int i = 0; i < rigidBodies.size(); ++i)
 	{
 		debugDrawer->DrawAABB(rigidBodies[i]->GetAABB(), rigidBodies[i]->GetDebugColour());		
-		//debugDrawer->DrawRigidBodyMotion(*rigidBodies[i]);
+		debugDrawer->DrawRigidBodyMotion(*rigidBodies[i]);
 		ConvexPolyhedron* poly = rigidBodies[i]->GetPoly();
 		if (poly)
 		{
@@ -56,11 +56,12 @@ void PhysicsSystem::Integrate(float timeStep)
 		rigidBodies[i]->SetDebugColour(Vec4(1, 1, 1, 1));
 		if (!rigidBodies[i]->isKinematic)
 		{
-			rigidBodies[i]->SetPosition((2 * rigidBodies[i]->GetPosition()) - rigidBodies[i]->GetLastPosition() + rigidBodies[i]->GetAcceleration() * timeSquared);
+			rigidBodies[i]->UpdatePosition((2 * rigidBodies[i]->GetPosition()) - rigidBodies[i]->GetLastPosition() + rigidBodies[i]->GetAcceleration() * timeSquared);
 			rigidBodies[i]->SetOrientation(qMultiply(rigidBodies[i]->GetOrientation(), rigidBodies[i]->GetAngularVelocity()));
 			rigidBodies[i]->CalculateTransform();
 			rigidBodies[i]->CalculateBB();
 			rigidBodies[i]->OnUpdateTransform();
+			rigidBodies[i]->ClearAcceleration();
 		}
 	}	
 	broadPhase.GenerateCollisions();

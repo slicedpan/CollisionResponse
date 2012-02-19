@@ -48,12 +48,12 @@ void DefaultDebugDrawer::DrawAABB(AABB& aabb, Vec4& colour)
 
 void DefaultDebugDrawer::DrawRigidBodyMotion(RigidBody& body)
 {
-	glColor3f(1, 0, 0);
-	Vec3 vel = body.GetVelocity() * 60.0; //approx how far it travels in one sec	
-	glBegin(GL_LINES);
-	glVertex(body.GetPosition() - vel);
-	glVertex(body.GetPosition());
-	glEnd();
+	lastColour = Vec3(1, 0, 0);
+	Vec3 vel = body.GetAcceleration(); //approx how far it travels in one sec	
+	Contact accVec;
+	accVec.Normal = vel;
+	accVec.Point = body.GetPosition();
+	DrawContact(accVec);
 }
 
 void DefaultDebugDrawer::DrawContacts(std::vector<Contact>& contacts)
