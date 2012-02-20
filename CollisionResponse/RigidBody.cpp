@@ -91,7 +91,7 @@ void RigidBody::ApplyContactImpulses(std::vector<Contact>& contacts, RigidBody* 
 	Vec3 rotationAxis1 = qAxisAngle(body1->GetOrientation());
 	Vec3 rotationAxis2 = qAxisAngle(body2->GetOrientation());
 	float t3, t4;
-	float restitution = 1.0f;
+	float restitution = 0.4f;
 	Vec3 impulseVec;
 	Vec3 angularAcc;
 	
@@ -106,13 +106,13 @@ void RigidBody::ApplyContactImpulses(std::vector<Contact>& contacts, RigidBody* 
 		t4 = dot(contacts[i].Normal, cross((Iinv2 * cross(offset2, contacts[i].Normal)), offset2));
 		impulse = (-(1 + restitution) * relativeVelocity) / (body1->GetInverseMass() + body2->GetInverseMass() + t3 + t4);
 		impulseVec = impulse * contacts[i].Normal * contacts[i].Reversed;
-		body1->ApplyForce(-impulseVec * 10.0f);
-		body2->ApplyForce(impulseVec * 10.0f);
+		body1->ApplyImpulse(-impulseVec);
+		body2->ApplyImpulse(impulseVec);
 
-		angularAcc = Iinv1 * cross(offset1, impulseVec);
-		//body1->ApplyAngularImpulse(angularAcc);
-		angularAcc = Iinv2 * cross(offset2, -impulseVec);
- 		//body2->ApplyAngularImpulse(angularAcc);
+		angularAcc = Iinv1 * cross(offset1, -impulseVec);
+		//body1->ApplyAngularImpulse(angularAcc / 1000.0f);
+		angularAcc = Iinv2 * cross(offset2, impulseVec);
+ 		//body2->ApplyAngularImpulse(angularAcc / 1000.0f);
 	}
 }
 

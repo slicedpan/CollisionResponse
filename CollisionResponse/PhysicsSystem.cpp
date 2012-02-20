@@ -56,7 +56,7 @@ void PhysicsSystem::Integrate(float timeStep)
 		rigidBodies[i]->SetDebugColour(Vec4(1, 1, 1, 1));
 		if (!rigidBodies[i]->IsKinematic())
 		{
-			//rigidBodies[i]->ApplyForce(Vec3(0, -1, 0) / rigidBodies[i]->GetInverseMass());
+			rigidBodies[i]->ApplyForce(Vec3(0, -1, 0) / rigidBodies[i]->GetInverseMass());
 			rigidBodies[i]->UpdatePosition((2 * rigidBodies[i]->GetPosition()) - rigidBodies[i]->GetLastPosition() + rigidBodies[i]->GetAcceleration() * timeSquared);
 			rigidBodies[i]->SetOrientation(qMultiply(rigidBodies[i]->GetOrientation(), rigidBodies[i]->GetAngularVelocity()));
 			rigidBodies[i]->CalculateTransform();

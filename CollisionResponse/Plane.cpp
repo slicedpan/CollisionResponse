@@ -10,11 +10,11 @@ Plane::Plane(Vec3 normal, Vec3 position) : ConvexPolyhedron(4, 2)
 	v1 = normal + Vec3(1.0, 0.0, 0.0);
 	v2 = norm(cross(v1, normal));
 	v1 = norm(cross(v2, normal));
-	SetPosition(position);
-	localPoints[0] = (v1 + v2) * 100.0f;
-	localPoints[1] = (-v1 + v2) * 100.0f;
-	localPoints[2] = (-v1 - v2) * 100.0f;
-	localPoints[3] = (v1 - v2) * 100.0f;
+	SetPosition(position - Vec3(0, 1.0f, 0));
+	localPoints[0] = (v1 + v2) * 100.0f + Vec3(0, 1, 0);
+	localPoints[1] = (-v1 + v2) * 100.0f + Vec3(0, 1, 0);
+	localPoints[2] = (-v1 - v2) * 100.0f + Vec3(0, 1, 0);
+	localPoints[3] = (v1 - v2) * 100.0f + Vec3(0, 1, 0);
 	int indices[] = {0, 1, 2, 0, 2, 3};
 	InitialiseTris(indices);
 	Vec3 planeBoxPoints[12];
