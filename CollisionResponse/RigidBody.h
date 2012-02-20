@@ -45,11 +45,13 @@ public:
 	virtual bool OnBroadPhaseCollide(RigidBody* other) { return false; }	//true to pass to narrowphase
 	virtual ConvexPolyhedron* GetPoly() { return 0; }
 	void ApplyContactImpulse(std::vector<Contact>& contacts, RigidBody* other);
-	bool isKinematic;
+	void SetKinematic(bool kinematic);
+	bool IsKinematic() { return isKinematic; }
 	static void ApplyContactImpulses(std::vector<Contact>& contacts, RigidBody* body1, RigidBody* body2);
 protected:
 	AABB baseBB;
-	Vec4 debugColour;
+	Vec4 debugColour;	
+	Mat3 invInertiaTensor;
 private:
 	Vec3 position;
 	Vec3 lastPosition;
@@ -58,19 +60,21 @@ private:
 	Vec4 orientation;
 	Vec4 angularVelocity;
 	Mat4 transform;	
-	Mat3 invInertiaTensor;
 	Mat3 rotationMatrix;
 	AABB currentBB;
 	float invMass;
 	ConvexPolyhedron* poly;
 	void GenerateRotationMatrix();	
 	float restitutionCoefficient;
+	bool isKinematic;
+
 };
 
 inline void RigidBody::SetPosition(Vec3 position)
 {	
 	lastPosition = position;
 	this->position = position;
+	CalculateTransform();
 }
 
 inline void RigidBody::UpdatePosition(Vec3 position)
@@ -107,7 +111,7 @@ inline void RigidBody::ApplyForce(Vec3 force)
 
 inline void RigidBody::ApplyImpulse(Vec3 impulse)
 {
-	acceleration += impulse;
+	lastPosition -= impulse;
 }
 
 inline void RigidBody::ApplyAngularImpulse(Vec4& angularImpulse)

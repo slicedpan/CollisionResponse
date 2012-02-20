@@ -23,11 +23,11 @@ Plane::Plane(Vec3 normal, Vec3 position) : ConvexPolyhedron(4, 2)
 	memcpy(planeBoxPoints + 8, localPoints, sizeof(Vec3) * 4);
 	for (int i = 4; i < 8; ++i)
 	{
-		planeBoxPoints[i] += (this->normal * 5.0f);
+		planeBoxPoints[i] += (this->normal * 1.0f);
 	}
 	for (int i = 8; i < 12; ++i)
 	{
-		planeBoxPoints[i] -= (this->normal * 5.0f);
+		planeBoxPoints[i] -= (this->normal * 10.0f);
 	}
 	baseBB.InitFromPoints(planeBoxPoints, 12);
 	SetRigidBody(this);

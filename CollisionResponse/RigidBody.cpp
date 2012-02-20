@@ -10,14 +10,14 @@ RigidBody::RigidBody(void) :
 	angularVelocity(1.0, 0.0, 0.0, 0.0),
 	debugColour(1.0, 1.0, 1.0, 1.0),
 	isKinematic(false),
-	restitutionCoefficient(0.3f)
+	restitutionCoefficient(0.3f),
+	velocity(0.0, 0.0, 0.0)
 {
 	transform.MakeDiag();
 	invInertiaTensor.MakeDiag();
 	rotationMatrix.MakeDiag();
 	baseBB.SetMax(Vec3(1, 1, 1));
 	baseBB.SetMin(Vec3(-1, -1, -1));
-	CalculateTransform();
 }
 
 RigidBody::~RigidBody(void)
@@ -106,12 +106,22 @@ void RigidBody::ApplyContactImpulses(std::vector<Contact>& contacts, RigidBody* 
 		t4 = dot(contacts[i].Normal, cross((Iinv2 * cross(offset2, contacts[i].Normal)), offset2));
 		impulse = (-(1 + restitution) * relativeVelocity) / (body1->GetInverseMass() + body2->GetInverseMass() + t3 + t4);
 		impulseVec = impulse * contacts[i].Normal * contacts[i].Reversed;
-		body1->ApplyForce(impulseVec);
-		body2->ApplyForce(-impulseVec);
+		body1->ApplyForce(-impulseVec * 10.0f);
+		body2->ApplyForce(impulseVec * 10.0f);
 
 		angularAcc = Iinv1 * cross(offset1, impulseVec);
 		//body1->ApplyAngularImpulse(angularAcc);
 		angularAcc = Iinv2 * cross(offset2, -impulseVec);
-		//body2->ApplyAngularImpulse(angularAcc);
+ 		//body2->ApplyAngularImpulse(angularAcc);
+	}
+}
+
+void RigidBody::SetKinematic(bool kinematic)
+{
+	isKinematic = kinematic;
+	if (isKinematic)
+	{
+		invMass = 0;
+		invInertiaTensor.MakeZero();
 	}
 }

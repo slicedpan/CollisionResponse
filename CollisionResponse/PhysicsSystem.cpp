@@ -54,8 +54,9 @@ void PhysicsSystem::Integrate(float timeStep)
 	for (int i = 0; i < rigidBodies.size(); ++i)
 	{
 		rigidBodies[i]->SetDebugColour(Vec4(1, 1, 1, 1));
-		if (!rigidBodies[i]->isKinematic)
+		if (!rigidBodies[i]->IsKinematic())
 		{
+			//rigidBodies[i]->ApplyForce(Vec3(0, -1, 0) / rigidBodies[i]->GetInverseMass());
 			rigidBodies[i]->UpdatePosition((2 * rigidBodies[i]->GetPosition()) - rigidBodies[i]->GetLastPosition() + rigidBodies[i]->GetAcceleration() * timeSquared);
 			rigidBodies[i]->SetOrientation(qMultiply(rigidBodies[i]->GetOrientation(), rigidBodies[i]->GetAngularVelocity()));
 			rigidBodies[i]->CalculateTransform();
@@ -84,6 +85,9 @@ void PhysicsSystem::AddRigidBody(RigidBody* bodyToAdd)
 {
 	rigidBodies.push_back(bodyToAdd);
 	broadPhase.AddBody(bodyToAdd);
+	bodyToAdd->CalculateTransform();
+	bodyToAdd->CalculateBB();
+	bodyToAdd->OnUpdateTransform();
 }
 
 void PhysicsSystem::SetDebugDrawer(IDebugDrawer* debugDrawer)

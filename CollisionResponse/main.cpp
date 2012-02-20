@@ -53,7 +53,7 @@ CameraController* cameraController;
 FPSCamera* camera;
 
 int fps = 60;
-bool physicsActive = true;
+bool physicsActive = false;
 
 Plane * groundPlane;
 ColouredParticleSystem* particleSystem;
@@ -66,7 +66,7 @@ AABB bounds(minPos, maxPos);
 Box* testBox;
 
 std::vector<Box*> boxes;
-int numBoxes = 2;
+int numBoxes = 1;
 Vec3 testVel;
 
 // This function is called to display the scene.
@@ -74,7 +74,7 @@ Vec3 testVel;
 void AddBox()
 {
 	Box* box = new Box(ColouredParticleSystem::RandomVector(30.0) + Vec3(0, 15, 0), ColouredParticleSystem::RandomVector(10.0) + Vec3(5, 5, 5));
-	box->ApplyImpulse(ColouredParticleSystem::RandomVector(1.0f));
+	box->ApplyImpulse(Vec3(0, -0.05, 0));
 	box->ApplyAngularMomentum(ColouredParticleSystem::RandomVector(1), ((float)rand() * 0.01) / RAND_MAX);
 	box->ConvexPolyhedron::SetDebugColour(Vec4(ColouredParticleSystem::RandomVector(1), 1));
 	boxes.push_back(box);
@@ -84,7 +84,7 @@ void AddBox()
 void AddTetra()
 {
 	Tetrahedron* tetra = new Tetrahedron(ColouredParticleSystem::RandomVector(30.0) + Vec3(0, 15, 0), (float)rand() * 10.0f / RAND_MAX);
-	tetra->ApplyImpulse(ColouredParticleSystem::RandomVector(0.05));
+	tetra->ApplyImpulse(ColouredParticleSystem::RandomVector(0.05f));
 	tetra->ApplyAngularImpulse(ColouredParticleSystem::RandomVector(1), ((float)rand() * 0.01) / RAND_MAX);
 	tetra->ConvexPolyhedron::SetDebugColour(Vec4(ColouredParticleSystem::RandomVector(1), 1));
 	PhysicsSystem::GetCurrentInstance()->AddRigidBody(tetra);
@@ -108,7 +108,7 @@ void setup()
 	}
 	glutSetCursor(GLUT_CURSOR_NONE);
 	groundPlane = new Plane(Vec3(0.0, 1.0, 0.0), Vec3(0.0, 5.0, 0.0));
-	groundPlane->isKinematic = true;
+	groundPlane->SetKinematic(true);
 	PhysicsSystem::GetCurrentInstance()->AddRigidBody(groundPlane);
 	for (int i = 0; i < numBoxes; ++i)
 	{
@@ -171,29 +171,7 @@ void display ()
 	glMultMatrixf(camera->GetViewTransform().Ref()); //apply camera transform
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPos.Ref());	
 	
-	groundPlane->Draw();
-
-	for (int i = 0; i < boxes.size(); ++i)
-	{
-		//boxes[i]->Draw();
-		Vec3& pos = boxes[i]->GetPosition();
-		Vec3& vel = boxes[i]->GetVelocity();
-		Vec3 imp = Vec3(0, 0, 0);
-		
-		for (int j = 0; j < 3; ++j)
-		{		
-			if (pos[j] > maxPos[j])	
-			{
-				imp[j] = maxPos[j] - pos[j];						
-			}
-			else if (pos[j] < minPos[j])
-			{
-				imp[j] = minPos[j] - pos[j];
-			}
-			boxes[i]->ApplyForce(imp);	
-		}		
-
-	}
+	groundPlane->Draw();	
 
 	glDisable(GL_LIGHTING);
 	PhysicsSystem::GetCurrentInstance()->DrawDebug();
@@ -288,11 +266,12 @@ void idle ()
 	static char buffer[BUFSIZE];
 	ostrstream s(buffer, BUFSIZE);
 	s << 
-		resetiosflags(ios::floatfield) << setiosflags(ios::fixed) << 
+		resetiosflags(ios::floatfield) << 
 		setprecision(3) << "Camera pitch, yaw: " << camera->Pitch << ", " << camera->Yaw << 
-		setprecision(0) << ").  Position=" << setw(3) << camera->Position[0] << ", " << camera->Position[1] << ", " << camera->Position[2] <<		
-		setprecision(2) << ".  fps=" << fps <<
-		"." << ends;
+		setprecision(3) << ").  BoxAccel=" << setw(3) << testBox->GetAcceleration()[0] << ", " << testBox->GetAcceleration()[1] << ", " << testBox->GetAcceleration()[2] <<		
+		setprecision(3) << ".  fps=" << fps <<
+		"." << 
+		" BoxVel=" << testBox->GetVelocity()[0] << ", " << testBox->GetVelocity()[1] << ", " << testBox->GetVelocity()[2] << ends;
 	glutSetWindowTitle(buffer);
 
 	dMouseX = (xMouse - width / 2.0f);

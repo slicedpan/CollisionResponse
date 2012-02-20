@@ -27,6 +27,12 @@ void Box::Init()
 	TriFromQuad(triangles + 8, triangles + 9, 2, 6, 7, 3);
 	TriFromQuad(triangles + 10, triangles + 11, 3, 7, 4, 0);
 	SetRigidBody(this);
+	float massFactor = 1.0f / 12.0f;
+	massFactor /= GetInverseMass();
+	float hSq = pow(extents[1], 2.0f);
+	float wSq = pow(extents[0], 2.0f);
+	float dSq = pow(extents[2], 2.0f);	
+	invInertiaTensor = inv(Mat3(massFactor * (hSq + dSq), 0.0, 0.0, 0.0, massFactor * (dSq + wSq), 0.0, 0.0, 0.0, massFactor * (wSq + hSq)));
 }
 
 Box::~Box(void)
