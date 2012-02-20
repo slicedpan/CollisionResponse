@@ -8,6 +8,8 @@
 class ConvexPolyhedron;
 struct Contact;
 
+extern int impulseCount;
+
 class RigidBody
 {
 public:
@@ -29,6 +31,7 @@ public:
 	Vec4& GetOrientation();
 	Mat3& GetOrientationMatrix() { return rotationMatrix; }
 	Mat3& GetInverseInertiaTensor() { return invInertiaTensor; }
+	void MoveBy(Vec3& offset) { SetPosition(position + offset); }
 	void SetOrientation(Vec4& orientation);
 	void ApplyAngularImpulse(Vec4& angularVelocity);
 	void ApplyAngularImpulse(Vec3& axis, float amount);
@@ -72,8 +75,9 @@ private:
 
 inline void RigidBody::SetPosition(Vec3 position)
 {	
-	lastPosition = position;
+	GetVelocity();	
 	this->position = position;
+	lastPosition = position - velocity;
 	CalculateTransform();
 }
 
@@ -112,6 +116,7 @@ inline void RigidBody::ApplyForce(Vec3 force)
 inline void RigidBody::ApplyImpulse(Vec3 impulse)
 {
 	lastPosition -= impulse;
+	++impulseCount;
 }
 
 inline void RigidBody::ApplyAngularImpulse(Vec4& angularImpulse)

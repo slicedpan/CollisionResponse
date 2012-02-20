@@ -69,6 +69,10 @@ std::vector<Box*> boxes;
 int numBoxes = 1;
 Vec3 testVel;
 
+int impulseCount = 0;
+int numContacts;
+float relativeVel = 0.0f;
+
 // This function is called to display the scene.
 
 void AddBox()
@@ -85,7 +89,7 @@ void AddTetra()
 {
 	Tetrahedron* tetra = new Tetrahedron(ColouredParticleSystem::RandomVector(30.0) + Vec3(0, 15, 0), (float)rand() * 10.0f / RAND_MAX);
 	tetra->ApplyImpulse(ColouredParticleSystem::RandomVector(0.05f));
-	tetra->ApplyAngularImpulse(ColouredParticleSystem::RandomVector(1), ((float)rand() * 0.01) / RAND_MAX);
+	tetra->ApplyAngularImpulse(ColouredParticleSystem::RandomVector(1));
 	tetra->ConvexPolyhedron::SetDebugColour(Vec4(ColouredParticleSystem::RandomVector(1), 1));
 	PhysicsSystem::GetCurrentInstance()->AddRigidBody(tetra);
 }
@@ -268,10 +272,11 @@ void idle ()
 	s << 
 		resetiosflags(ios::floatfield) << 
 		setprecision(3) << "Camera pitch, yaw: " << camera->Pitch << ", " << camera->Yaw << 
-		setprecision(3) << ").  BoxAccel=" << setw(3) << testBox->GetAcceleration()[0] << ", " << testBox->GetAcceleration()[1] << ", " << testBox->GetAcceleration()[2] <<		
+		setprecision(3) << ").  BoxAngularVel=" << setw(3) << testBox->GetAngularVelocity()[0] << ", " << testBox->GetAngularVelocity()[1] << ", " << testBox->GetAngularVelocity()[2] << ", " << testBox->GetAngularVelocity()[3] <<
 		setprecision(3) << ".  fps=" << fps <<
 		"." << 
-		" BoxVel=" << testBox->GetVelocity()[0] << ", " << testBox->GetVelocity()[1] << ", " << testBox->GetVelocity()[2] << ends;
+		" BoxVel=" << testBox->GetVelocity()[0] << ", " << testBox->GetVelocity()[1] << ", " << testBox->GetVelocity()[2] << ". ImpulseCount=" 
+		<< impulseCount << " NumContacts=" << numContacts << " RelativeVel=" << relativeVel << ends;
 	glutSetWindowTitle(buffer);
 
 	dMouseX = (xMouse - width / 2.0f);

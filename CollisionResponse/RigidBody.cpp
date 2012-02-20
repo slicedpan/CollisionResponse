@@ -1,6 +1,9 @@
 #include "RigidBody.h"
 #include "Contact.h"
 
+extern int numContacts;
+extern float relativeVel;
+
 RigidBody::RigidBody(void) : 
 	position(0, 0, 0), 
 	lastPosition(0, 0, 0), 
@@ -94,26 +97,56 @@ void RigidBody::ApplyContactImpulses(std::vector<Contact>& contacts, RigidBody* 
 	float restitution = 0.4f;
 	Vec3 impulseVec;
 	Vec3 angularAcc;
+	Vec3 body1Impulse(0.0, 0.0, 0.0);
+	Vec3 body2Impulse(0.0, 0.0, 0.0);
+
+	Vec3 spotDistance = contacts[0].Depth * contacts[0].Normal;
+	spotDistance *= 1.001;
+
+	if (body1->IsKinematic())
+	{
+		body2->MoveBy(-spotDistance);
+	}
+	else if (body2->IsKinematic())
+	{
+		body1->MoveBy(spotDistance);
+	}
+	else
+	{
+		body2->MoveBy(spotDistance * -0.5);
+		body1->MoveBy(spotDistance * 0.5);
+	}
 	
 	for (int i = 0; i < contacts.size(); ++i)
 	{		
+		++numContacts;
 		offset1 = contacts[i].Point - body1->GetPosition();
 		offset2 = contacts[i].Point - body2->GetPosition();		
 		pointVel1 = body1->GetVelocity() + cross(rotationAxis1, offset1);
 		pointVel2 = body2->GetVelocity() + cross(rotationAxis2, offset2);
+		contacts[i].Normal *= contacts[i].Reversed;
 		relativeVelocity = dot(contacts[i].Normal, (pointVel1 - pointVel2));
+		relativeVel = relativeVelocity;
+		//relativeVelocity = 0.1f;
 		t3 = dot(contacts[i].Normal, cross((Iinv1 * cross(offset1, contacts[i].Normal)), offset1));
 		t4 = dot(contacts[i].Normal, cross((Iinv2 * cross(offset2, contacts[i].Normal)), offset2));
+
 		impulse = (-(1 + restitution) * relativeVelocity) / (body1->GetInverseMass() + body2->GetInverseMass() + t3 + t4);
-		impulseVec = impulse * contacts[i].Normal * contacts[i].Reversed;
-		body1->ApplyImpulse(-impulseVec);
-		body2->ApplyImpulse(impulseVec);
+		impulseVec = impulse * contacts[i].Normal;
+
+		body1Impulse += impulseVec;
+		body2Impulse -= impulseVec;
+
+		/*body1->ApplyImpulse(impulseVec);
+		body2->ApplyImpulse(-impulseVec);*/
 
 		angularAcc = Iinv1 * cross(offset1, -impulseVec);
-		//body1->ApplyAngularImpulse(angularAcc / 1000.0f);
+		//body1->ApplyAngularImpulse(angularAcc);
 		angularAcc = Iinv2 * cross(offset2, impulseVec);
- 		//body2->ApplyAngularImpulse(angularAcc / 1000.0f);
+ 		//body2->ApplyAngularImpulse(angularAcc);
 	}
+	body1->ApplyImpulse(body1Impulse / contacts.size());
+	body2->ApplyImpulse(body2Impulse / contacts.size());
 }
 
 void RigidBody::SetKinematic(bool kinematic)
