@@ -56,7 +56,11 @@ inline Vec4 qMultiply(Vec4 q1, Vec4 q2)
 }
 
 inline Vec3 qAxisAngle(Vec4 q1)
-{
-	float qwSquared = (2 * acos(q1[3])) / pow(q1[3], 2.0f);
-	return Vec3(q1[0] / qwSquared, q1[1] / qwSquared, q1[2] / qwSquared);
+{	
+	float angle = 2 * acos(q1[0]);
+	if (angle == 0.0f)
+		return Vec3(0.0, 0.0, 0.0);
+	Vec3 retVec(q1[1], q1[2], q1[3]);
+	retVec.Normalise();
+	return retVec * (angle);
 }

@@ -3,6 +3,7 @@
 
 extern int numContacts;
 extern float relativeVel;
+extern bool breakOnImpulse;
 
 RigidBody::RigidBody(void) : 
 	position(0, 0, 0), 
@@ -67,7 +68,10 @@ void RigidBody::ApplyAngularImpulse(Vec3& axis, float amount)
 
 void RigidBody::ApplyAngularImpulse(Vec3& axisAngle)
 {
-	ApplyAngularImpulse(axisAngle, len(axisAngle));
+	float amount = len(axisAngle);
+	if (amount == 0.0f)
+		return;
+	ApplyAngularImpulse(axisAngle, amount);
 }
 
 void RigidBody::ApplyContactImpulse(std::vector<Contact>& contacts, RigidBody* other)
@@ -85,16 +89,20 @@ void RigidBody::GenerateRotationMatrix()
 
 void RigidBody::ApplyContactImpulses(std::vector<Contact>& contacts, RigidBody* body1, RigidBody* body2)
 {
+
+	if (breakOnImpulse)
+		int i = 0;
+
 	float impulse;
 	Vec3 offset1, offset2;
 	float relativeVelocity;
 	Mat3 Iinv1 = body1->GetOrientationMatrix() * body1->GetInverseInertiaTensor() * trans(body1->GetOrientationMatrix());
 	Mat3 Iinv2 = body2->GetOrientationMatrix() * body2->GetInverseInertiaTensor() * trans(body2->GetOrientationMatrix());
 	Vec3 pointVel1, pointVel2;
-	Vec3 rotationAxis1 = qAxisAngle(body1->GetOrientation());
-	Vec3 rotationAxis2 = qAxisAngle(body2->GetOrientation());
+	Vec3 rotationAxis1 = qAxisAngle(body1->GetAngularVelocity());
+	Vec3 rotationAxis2 = qAxisAngle(body2->GetAngularVelocity());
 	float t3, t4;
-	float restitution = 0.4f;
+	float restitution = 1.0f;
 	Vec3 impulseVec;
 	Vec3 angularAcc;
 	Vec3 body1Impulse(0.0, 0.0, 0.0);
@@ -102,6 +110,8 @@ void RigidBody::ApplyContactImpulses(std::vector<Contact>& contacts, RigidBody* 
 
 	Vec3 spotDistance = contacts[0].Depth * contacts[0].Normal;
 	spotDistance *= 1.001;
+
+	
 
 	if (body1->IsKinematic())
 	{
@@ -134,19 +144,19 @@ void RigidBody::ApplyContactImpulses(std::vector<Contact>& contacts, RigidBody* 
 		impulse = (-(1 + restitution) * relativeVelocity) / (body1->GetInverseMass() + body2->GetInverseMass() + t3 + t4);
 		impulseVec = impulse * contacts[i].Normal;
 
-		body1Impulse += impulseVec;
-		body2Impulse -= impulseVec;
+		/*body1Impulse += impulseVec;
+		body2Impulse -= impulseVec;*/
 
-		/*body1->ApplyImpulse(impulseVec);
-		body2->ApplyImpulse(-impulseVec);*/
+		body1->ApplyImpulse(impulseVec);
+		body2->ApplyImpulse(-impulseVec);
 
 		angularAcc = Iinv1 * cross(offset1, -impulseVec);
-		//body1->ApplyAngularImpulse(angularAcc);
+		body1->ApplyAngularImpulse(angularAcc / 100.0f);
 		angularAcc = Iinv2 * cross(offset2, impulseVec);
- 		//body2->ApplyAngularImpulse(angularAcc);
+ 		body2->ApplyAngularImpulse(angularAcc / 100.0f);
 	}
-	body1->ApplyImpulse(body1Impulse / contacts.size());
-	body2->ApplyImpulse(body2Impulse / contacts.size());
+	/*body1->ApplyImpulse(body1Impulse / contacts.size());
+	body2->ApplyImpulse(body2Impulse / contacts.size());*/
 }
 
 void RigidBody::SetKinematic(bool kinematic)
@@ -156,5 +166,7 @@ void RigidBody::SetKinematic(bool kinematic)
 	{
 		invMass = 0;
 		invInertiaTensor.MakeZero();
+		lastPosition = position;
+		velocity.MakeZero();
 	}
 }

@@ -94,7 +94,9 @@ inline void RigidBody::ClearAcceleration()
 
 inline Vec3& RigidBody::GetVelocity() 
 {
-	velocity = position - lastPosition;
+	if (isKinematic)
+		return Vec3(0.0, 0.0, 0.0);
+	velocity = position - lastPosition;	
 	return velocity;
 }
 

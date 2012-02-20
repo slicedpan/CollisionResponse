@@ -23,15 +23,15 @@ void VoronoiSolver::Check(ConvexPolyhedron* poly1, ConvexPolyhedron* poly2)
 	{
 		Vec3& point = points2[i];
 
-		/*if (dot(point - p2, d) < 0)
-			continue;*/
+		if (dot(point - p2, d) < 0)
+			continue;
 
 		for (int j = 0; j < poly1->GetNumberOfTriangles(); ++j)
 		{
 			Triangle& tri = tris1[j];
 
-			/*if (dot(tri.normal, d) > 0)
-				continue;*/
+			if (dot(tri.normal, d) > 0)
+				continue;
 
 			int index = VertexVoronoi(point, tri);
 			if (index >= 0)

@@ -72,13 +72,14 @@ Vec3 testVel;
 int impulseCount = 0;
 int numContacts;
 float relativeVel = 0.0f;
+bool breakOnImpulse = false;
 
 // This function is called to display the scene.
 
 void AddBox()
 {
 	Box* box = new Box(ColouredParticleSystem::RandomVector(30.0) + Vec3(0, 15, 0), ColouredParticleSystem::RandomVector(10.0) + Vec3(5, 5, 5));
-	box->ApplyImpulse(Vec3(0, -0.05, 0));
+	//box->ApplyImpulse(Vec3(0, -0.05, 0));
 	box->ApplyAngularMomentum(ColouredParticleSystem::RandomVector(1), ((float)rand() * 0.01) / RAND_MAX);
 	box->ConvexPolyhedron::SetDebugColour(Vec4(ColouredParticleSystem::RandomVector(1), 1));
 	boxes.push_back(box);
@@ -89,7 +90,7 @@ void AddTetra()
 {
 	Tetrahedron* tetra = new Tetrahedron(ColouredParticleSystem::RandomVector(30.0) + Vec3(0, 15, 0), (float)rand() * 10.0f / RAND_MAX);
 	tetra->ApplyImpulse(ColouredParticleSystem::RandomVector(0.05f));
-	tetra->ApplyAngularImpulse(ColouredParticleSystem::RandomVector(1));
+	tetra->ApplyAngularImpulse(ColouredParticleSystem::RandomVector(0.05f));
 	tetra->ConvexPolyhedron::SetDebugColour(Vec4(ColouredParticleSystem::RandomVector(1), 1));
 	PhysicsSystem::GetCurrentInstance()->AddRigidBody(tetra);
 }
@@ -111,9 +112,11 @@ void setup()
 		lastKeystate[i] = false;
 	}
 	glutSetCursor(GLUT_CURSOR_NONE);
-	groundPlane = new Plane(Vec3(0.0, 1.0, 0.0), Vec3(0.0, 5.0, 0.0));
-	groundPlane->SetKinematic(true);
-	PhysicsSystem::GetCurrentInstance()->AddRigidBody(groundPlane);
+	/*groundPlane = new Plane(Vec3(0.0, 1.0, 0.0), Vec3(0.0, 5.0, 0.0));
+	groundPlane->SetKinematic(true);*/
+	Box* groundBox = new Box(Vec3(0, 0, 0), Vec3(100, 1, 100));
+	groundBox->SetKinematic(true);
+	PhysicsSystem::GetCurrentInstance()->AddRigidBody(groundBox);
 	for (int i = 0; i < numBoxes; ++i)
 	{
 		AddBox();
@@ -173,9 +176,8 @@ void display ()
 	glLoadIdentity();
 	
 	glMultMatrixf(camera->GetViewTransform().Ref()); //apply camera transform
-	glLightfv(GL_LIGHT0, GL_POSITION, lightPos.Ref());	
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPos.Ref());
 	
-	groundPlane->Draw();	
 
 	glDisable(GL_LIGHTING);
 	PhysicsSystem::GetCurrentInstance()->DrawDebug();
@@ -229,6 +231,9 @@ void HandleInput()
 	{
 		cameraController->MoveDown();
 	}
+
+	if (keystate['o'] && !lastKeystate['o'])
+		breakOnImpulse = true;
 
 	if (keystate['b'] && !lastKeystate['b'])
 	{
