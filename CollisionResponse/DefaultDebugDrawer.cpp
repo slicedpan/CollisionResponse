@@ -7,6 +7,29 @@
 #include <glut.h>
 #include <svl\SVLgl.h>
 
+void DrawArrow(Vec3& point, Vec3& direction, Vec3& colour)
+{	
+	Vec3 v1 = Vec3(0.0, 0.0, 1.0);
+	if (fabs(dot(direction, v1)) > 0.999f)
+		v1 = Vec3(1.0, 0.0, 0.0);
+	v1 += direction;
+	v1 = cross(v1, direction);
+	Vec3 end = point + direction;
+	glColor(colour);		
+	glPointSize(3.0f);
+	glBegin(GL_POINTS);
+	glVertex(point);
+	glEnd();
+	glBegin(GL_LINES);
+	glVertex(point);
+	glVertex(end);
+	glVertex(end);
+	glVertex(point + (direction * 0.6) + (v1 * 0.3));
+	glVertex(end);
+	glVertex(point + (direction * 0.6) - (v1 * 0.3));		
+	glEnd();
+}
+
 DefaultDebugDrawer::DefaultDebugDrawer(void)
 {
 }
@@ -67,22 +90,7 @@ void DefaultDebugDrawer::DrawContacts(std::vector<Contact>& contacts)
 
 void DefaultDebugDrawer::DrawContact(Contact& contact)
 {
-	Vec3 v1 = contact.Normal + Vec3(1.0, 1.0, 1.0);
-	v1 = norm(cross(v1, contact.Normal));
-	Vec3 end = contact.Point + contact.Normal;
-	glColor(lastColour);		
-	glPointSize(3.0f);
-	glBegin(GL_POINTS);
-	glVertex(contact.Point);
-	glEnd();
-	glBegin(GL_LINES);
-	glVertex(contact.Point);
-	glVertex(end);
-	glVertex(end);
-	glVertex(contact.Point + (contact.Normal * 0.6) + (v1 * 0.4));
-	glVertex(end);
-	glVertex(contact.Point + (contact.Normal * 0.6) - (v1 * 0.4));		
-	glEnd();
+	DrawArrow(contact.Point, contact.Normal, lastColour);
 }
 
 void DefaultDebugDrawer::DrawPoly(ConvexPolyhedron* poly)

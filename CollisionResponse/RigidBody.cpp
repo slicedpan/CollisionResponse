@@ -151,9 +151,9 @@ void RigidBody::ApplyContactImpulses(std::vector<Contact>& contacts, RigidBody* 
 		body2->ApplyImpulse(-impulseVec);
 
 		angularAcc = Iinv1 * cross(offset1, -impulseVec);
-		body1->ApplyAngularImpulse(angularAcc / 100.0f);
+		body1->ApplyAngularImpulse(angularAcc);
 		angularAcc = Iinv2 * cross(offset2, impulseVec);
- 		body2->ApplyAngularImpulse(angularAcc / 100.0f);
+ 		body2->ApplyAngularImpulse(angularAcc);
 	}
 	/*body1->ApplyImpulse(body1Impulse / contacts.size());
 	body2->ApplyImpulse(body2Impulse / contacts.size());*/
@@ -169,4 +169,12 @@ void RigidBody::SetKinematic(bool kinematic)
 		lastPosition = position;
 		velocity.MakeZero();
 	}
+}
+
+void RigidBody::ApplyForceAtPoint(Vec3& force, Vec3& point)
+{
+	Mat3 Iinv = rotationMatrix * invInertiaTensor * trans(rotationMatrix);
+	Vec3 offset = point - position;
+	Vec3 angularAcc = Iinv * cross(offset, force);
+	ApplyAngularImpulse(angularAcc);
 }

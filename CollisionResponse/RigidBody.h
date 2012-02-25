@@ -1,7 +1,6 @@
 #pragma once
 
 #include <svl\SVL.h>
-#include "Quaternion.h"
 #include "AABB.h"
 #include <vector>
 
@@ -15,14 +14,15 @@ class RigidBody
 public:
 	RigidBody(void);
 	~RigidBody(void);
-	void ApplyImpulse(Vec3 impulse);
-	void ApplyForce(Vec3 force);
+	void ApplyImpulse(Vec3& impulse);
+	void ApplyForce(Vec3& force);
+	void ApplyForceAtPoint(Vec3& force, Vec3& point);
 	void SetInverseMass(float invMass) { this->invMass = invMass; }
 	float GetInverseMass() { return invMass; }
 	void SetRestitution(float value) { restitutionCoefficient = value; }
 	float GetRestitution() { return restitutionCoefficient; }
-	void SetPosition(Vec3 position);
-	void UpdatePosition(Vec3 position);
+	void SetPosition(Vec3& position);
+	void UpdatePosition(Vec3& position);
 	Vec3& GetVelocity();
 	Vec3& GetPosition();
 	Vec3& GetAcceleration();
@@ -73,7 +73,7 @@ private:
 
 };
 
-inline void RigidBody::SetPosition(Vec3 position)
+inline void RigidBody::SetPosition(Vec3& position)
 {	
 	GetVelocity();	
 	this->position = position;
@@ -81,7 +81,7 @@ inline void RigidBody::SetPosition(Vec3 position)
 	CalculateTransform();
 }
 
-inline void RigidBody::UpdatePosition(Vec3 position)
+inline void RigidBody::UpdatePosition(Vec3& position)
 {
 	lastPosition = this->position;
 	this->position = position;
@@ -110,12 +110,12 @@ inline Vec4& RigidBody::GetAngularVelocity() {return angularVelocity;}
 inline void RigidBody::SetDebugColour(Vec4& colour) {debugColour = colour;}
 inline Vec4& RigidBody::GetDebugColour() {return debugColour;}
 
-inline void RigidBody::ApplyForce(Vec3 force)
+inline void RigidBody::ApplyForce(Vec3& force)
 {
 	acceleration += force * invMass;
 }
 
-inline void RigidBody::ApplyImpulse(Vec3 impulse)
+inline void RigidBody::ApplyImpulse(Vec3& impulse)
 {
 	lastPosition -= impulse;
 	++impulseCount;

@@ -20,6 +20,8 @@
 
 using namespace std;
 
+extern void DrawArrow(Vec3& point, Vec3& direction, Vec3& colour);
+
 // Initial size of graphics window.
 const int WIDTH  = 1200;
 const int HEIGHT = 800;
@@ -73,6 +75,7 @@ int impulseCount = 0;
 int numContacts;
 float relativeVel = 0.0f;
 bool breakOnImpulse = false;
+bool handleMouse = true;
 
 // This function is called to display the scene.
 
@@ -80,7 +83,7 @@ void AddBox()
 {
 	Box* box = new Box(ColouredParticleSystem::RandomVector(30.0) + Vec3(0, 15, 0), ColouredParticleSystem::RandomVector(10.0) + Vec3(5, 5, 5));
 	//box->ApplyImpulse(Vec3(0, -0.05, 0));
-	box->ApplyAngularMomentum(ColouredParticleSystem::RandomVector(1), ((float)rand() * 0.01) / RAND_MAX);
+	//box->ApplyAngularMomentum(ColouredParticleSystem::RandomVector(1), ((float)rand() * 0.01) / RAND_MAX);
 	box->ConvexPolyhedron::SetDebugColour(Vec4(ColouredParticleSystem::RandomVector(1), 1));
 	boxes.push_back(box);
 	PhysicsSystem::GetCurrentInstance()->AddRigidBody(box);
@@ -152,6 +155,7 @@ void display ()
 {
 	int currentTime = glutGet(GLUT_ELAPSED_TIME);
 	int elapsedTime = (currentTime - lastTime);
+
 	lastTime = currentTime;
 
 	glEnable(GL_DEPTH_TEST);
@@ -178,29 +182,24 @@ void display ()
 	glMultMatrixf(camera->GetViewTransform().Ref()); //apply camera transform
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPos.Ref());
 	
+	glPushMatrix();
 
 	glDisable(GL_LIGHTING);
 	PhysicsSystem::GetCurrentInstance()->DrawDebug();
 	PhysicsSystem::GetCurrentInstance()->GetDebugDrawer()->DrawAABB(bounds, Vec4(0, 0, 1, 1));
-	/*
-	//Draw model axes.
-	glBegin(GL_LINES);
-		// X axis
-		glColor3f(1, 0, 0);
-		glVertex3f(0, 0, 0);
-		glVertex3f(2, 0, 0);
-		// Y axis
-		glColor3f(0, 1, 0);
-		glVertex3f(0, 0, 0);
-		glVertex3f(0, 2, 0);
-		// Z axis
-		glColor3f(0, 0, 1);
-		glVertex3f(0, 0, 0);
-		glVertex3f(0, 0, 2);
-	glEnd();
-	*/
+
+	glPopMatrix();
+
+	Vec3 origin(0, 2, 0);
+
+	DrawArrow(origin, Vec3(5, 0, 0), Vec3(1, 0, 0));
+	DrawArrow(origin, Vec3(0, 5, 0), Vec3(0, 1, 0));
+	DrawArrow(origin, Vec3(0, 0, 5), Vec3(0, 0, 1));
 
 	glutSwapBuffers();
+
+	while (glutGet(GLUT_ELAPSED_TIME) - currentTime < 16) {}	
+
 }
 
 void HandleInput()
@@ -232,6 +231,20 @@ void HandleInput()
 		cameraController->MoveDown();
 	}
 
+	if (keystate['m'] && !lastKeystate['m'])
+	{
+		if (handleMouse)
+		{
+			handleMouse = false;
+			glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+		}
+		else
+		{
+			handleMouse = true;
+			glutSetCursor(GLUT_CURSOR_NONE);
+		}
+	}
+
 	if (keystate['o'] && !lastKeystate['o'])
 		breakOnImpulse = true;
 
@@ -243,6 +256,13 @@ void HandleInput()
 		AddTetra();
 	if (keystate['p'] && !lastKeystate['p'])
 		physicsActive = !physicsActive;
+
+	if (keystate['l'])
+	{
+		testBox->ApplyForceAtPoint(Vec3(0.001, 0, 0), testBox->GetPosition() + Vec3(0, 1, 0));
+	}
+	if (keystate['k'])
+		testBox->ApplyAngularMomentum(Vec3(1, 0, 0), 0.001);
 	
 	if (keystate[27])
 		exit(0);
@@ -271,13 +291,19 @@ void idle ()
 		alpha -= ALL_ROUND;
 
 	// Display normalized coordinates in title bar.
+
+	Vec3 axis = qAxisAngle(testBox->GetAngularVelocity());
+	float magnitude = len(axis);
+	if (magnitude > 0.00001f)
+		axis /= magnitude;
+
 	const int BUFSIZE = 200;
 	static char buffer[BUFSIZE];
 	ostrstream s(buffer, BUFSIZE);
 	s << 
 		resetiosflags(ios::floatfield) << 
 		setprecision(3) << "Camera pitch, yaw: " << camera->Pitch << ", " << camera->Yaw << 
-		setprecision(3) << ").  BoxAngularVel=" << setw(3) << testBox->GetAngularVelocity()[0] << ", " << testBox->GetAngularVelocity()[1] << ", " << testBox->GetAngularVelocity()[2] << ", " << testBox->GetAngularVelocity()[3] <<
+		setprecision(3) << ").  BoxAngularVel=" << setw(3) << magnitude << ", " << axis[0] << ", " << axis[1] << ", " << axis[2] <<
 		setprecision(3) << ".  fps=" << fps <<
 		"." << 
 		" BoxVel=" << testBox->GetVelocity()[0] << ", " << testBox->GetVelocity()[1] << ", " << testBox->GetVelocity()[2] << ". ImpulseCount=" 
@@ -287,9 +313,13 @@ void idle ()
 	dMouseX = (xMouse - width / 2.0f);
 	dMouseY = (yMouse - height / 2.0f);
 
-	cameraController->ChangePitch(-dMouseY);
-	cameraController->ChangeYaw(-dMouseX);
-	glutWarpPointer(width / 2, height / 2);
+
+	if (handleMouse)
+	{
+		cameraController->ChangePitch(-dMouseY);
+		cameraController->ChangeYaw(-dMouseX);
+		glutWarpPointer(width / 2, height / 2);
+	}
 
 	glutPostRedisplay();
 }
