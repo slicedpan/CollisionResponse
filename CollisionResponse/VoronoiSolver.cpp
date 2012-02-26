@@ -2,6 +2,8 @@
 #include "Triangle.h"
 #include "ConvexPolyhedron.h"
 
+extern bool breakEnable;
+
 VoronoiSolver::VoronoiSolver(void)
 {
 }
@@ -17,14 +19,12 @@ void VoronoiSolver::Check(ConvexPolyhedron* poly1, ConvexPolyhedron* poly2)
 	Vec3 d = p1 - p2;
 
 	Triangle* tris1 = poly1->GetTriangles();
-	Vec3* points2 = poly2->GetPoints();		
+	Vec3* points2 = poly2->GetPoints();
 
 	for (int i = 0; i < poly2->GetNumberOfPoints(); ++i)
 	{
 		Vec3& point = points2[i];
-
-		if (dot(point - p2, d) < 0)
-			continue;
+		float leastDepth = FLT_MAX;
 
 		for (int j = 0; j < poly1->GetNumberOfTriangles(); ++j)
 		{
@@ -42,8 +42,8 @@ void VoronoiSolver::Check(ConvexPolyhedron* poly1, ConvexPolyhedron* poly2)
 					lastContact.Point = tri[index];
 					lastContact.Normal = point - lastContact.Point;
 					lastContact.Depth = 0.0f;
-					contacts.push_back(lastContact);
 					colliding = true;
+					break;
 				}
 				continue;	//point is in vertex voronoi region of this triangle
 			} 
@@ -62,24 +62,32 @@ void VoronoiSolver::Check(ConvexPolyhedron* poly1, ConvexPolyhedron* poly2)
 					lastContact.Point = edgePoint;
 					lastContact.Normal = point - edgePoint;
 					lastContact.Depth = 0.0f;
-					contacts.push_back(lastContact);
 					colliding = true;
+					break;
 				}
-				continue;	//point is in edge voronoi region
+				continue; //point is in edge voronoi region
 			}
 			//otherwise we are in face voronoi region
 			Vec3 facePoint = point - tri.normal * dot(point - tri[0], tri.normal);
-			float depth = dot(point - facePoint, tri.normal);
-			if (depth < 0)
-			{					
+			float depth = dot(facePoint - point, tri.normal);
+			if (depth > 0)
+			{	
+				if (depth > 5.0)
+					continue;
+				if (depth < leastDepth)
+					leastDepth = depth;
+				else
+					continue;
 				lastContact.Point = facePoint;
 				lastContact.Normal = tri.normal;
-				lastContact.Depth = -depth;
-				contacts.push_back(lastContact);
-				colliding = true;
-				break;
+				lastContact.Depth = depth;			
+				
+				colliding = true;				
 			}
-		}
+		}	
+
+		if (colliding)
+			contacts.push_back(lastContact);
 	}	
 }
 

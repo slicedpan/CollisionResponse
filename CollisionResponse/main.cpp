@@ -39,6 +39,8 @@ float dMouseY = 0.0f;
 bool keystate[256];
 bool lastKeystate[256];
 
+bool breakEnable = false;
+
 // Bounds of viewing frustum.
 double nearPlane =  0.1f;
 double farPlane  = 1000.0f;
@@ -82,7 +84,7 @@ bool handleMouse = true;
 void AddBox()
 {
 	Box* box = new Box(ColouredParticleSystem::RandomVector(30.0) + Vec3(0, 15, 0), ColouredParticleSystem::RandomVector(10.0) + Vec3(5, 5, 5));
-	//box->ApplyImpulse(Vec3(0, -0.05, 0));
+	box->ApplyImpulse(Vec3(0, -0.05, 0));
 	//box->ApplyAngularMomentum(ColouredParticleSystem::RandomVector(1), ((float)rand() * 0.01) / RAND_MAX);
 	box->ConvexPolyhedron::SetDebugColour(Vec4(ColouredParticleSystem::RandomVector(1), 1));
 	boxes.push_back(box);
@@ -115,8 +117,6 @@ void setup()
 		lastKeystate[i] = false;
 	}
 	glutSetCursor(GLUT_CURSOR_NONE);
-	/*groundPlane = new Plane(Vec3(0.0, 1.0, 0.0), Vec3(0.0, 5.0, 0.0));
-	groundPlane->SetKinematic(true);*/
 	Box* groundBox = new Box(Vec3(0, 0, 0), Vec3(100, 1, 100));
 	groundBox->SetKinematic(true);
 	PhysicsSystem::GetCurrentInstance()->AddRigidBody(groundBox);
@@ -246,11 +246,11 @@ void HandleInput()
 	}
 
 	if (keystate['o'] && !lastKeystate['o'])
-		breakOnImpulse = true;
+		breakEnable = true;
 
 	if (keystate['b'] && !lastKeystate['b'])
 	{
-		AddBox();
+		AddBox();		
 	}
 	if (keystate['q'] && !lastKeystate['q'])
 		AddTetra();
@@ -259,10 +259,10 @@ void HandleInput()
 
 	if (keystate['l'])
 	{
-		testBox->ApplyForceAtPoint(Vec3(0.001, 0, 0), testBox->GetPosition() + Vec3(0, 1, 0));
+		testBox->ApplyForceAtPoint(Vec3(0.001, 0, 0), testBox->GetPosition() + Vec3(0, 0, 1));
 	}
 	if (keystate['k'])
-		testBox->ApplyAngularMomentum(Vec3(1, 0, 0), 0.001);
+		testBox->ApplyForceAtPoint(Vec3(0.0, 0.0, 0.001), testBox->GetPosition() + Vec3(0, 1, 0));
 	
 	if (keystate[27])
 		exit(0);
@@ -294,7 +294,7 @@ void idle ()
 
 	Vec3 axis = qAxisAngle(testBox->GetAngularVelocity());
 	float magnitude = len(axis);
-	if (magnitude > 0.00001f)
+	if (magnitude > 0.0000001f)
 		axis /= magnitude;
 
 	const int BUFSIZE = 200;
@@ -338,12 +338,12 @@ void mouseMovement (int mx, int my)
 // Parameters give new window size in pixels.
 void reshapeMainWindow (int newWidth, int newHeight)
 {
-   width = newWidth;
-   height = newHeight;
+	width = newWidth;
+	height = newHeight;
 	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-   gluPerspective(fovy, GLfloat(width) / GLfloat(height), nearPlane, farPlane);
+	gluPerspective(fovy, GLfloat(width) / GLfloat(height), nearPlane, farPlane);
 }
 
 // Display help.

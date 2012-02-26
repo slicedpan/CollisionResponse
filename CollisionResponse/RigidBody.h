@@ -95,8 +95,9 @@ inline void RigidBody::ClearAcceleration()
 inline Vec3& RigidBody::GetVelocity() 
 {
 	if (isKinematic)
-		return Vec3(0.0, 0.0, 0.0);
-	velocity = position - lastPosition;	
+		velocity.MakeZero();
+	else
+		velocity = position - lastPosition;	
 	return velocity;
 }
 
@@ -119,11 +120,6 @@ inline void RigidBody::ApplyImpulse(Vec3& impulse)
 {
 	lastPosition -= impulse;
 	++impulseCount;
-}
-
-inline void RigidBody::ApplyAngularImpulse(Vec4& angularImpulse)
-{
-	angularVelocity = qMultiply(angularVelocity, angularImpulse);
 }
 
 inline void RigidBody::SetOrientation(Vec4& orientation)

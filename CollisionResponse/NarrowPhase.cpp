@@ -25,7 +25,7 @@ void NarrowPhase::CollidePairs(std::vector<NarrowPhasePair>& pairs)
 		if (solver->Collide(pairs[i].p1, pairs[i].p2))
 		{			
 			std::vector<Contact>& pairContacts = solver->GetContacts();			
-			std::sort(pairContacts.begin(), pairContacts.end(), DepthSort);
+			//std::sort(pairContacts.begin(), pairContacts.end(), DepthSort); probably not necessary
 			contacts.insert(contacts.end(), pairContacts.begin(), pairContacts.end());
 			body1 = pairs[i].p1->GetRigidBody();
 			body2 = pairs[i].p2->GetRigidBody();

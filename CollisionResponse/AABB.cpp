@@ -1,5 +1,7 @@
 #include "AABB.h"
 
+extern bool breakOnAABBTransform;
+
 
 AABB::AABB(void)
 {
@@ -16,8 +18,12 @@ AABB AABB::Transform(Mat4& transform)
 	Vec3* originalPoints = GeneratePoints();
 	Vec3 newMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 	Vec3 newMin(FLT_MAX, FLT_MAX, FLT_MAX);
+
+	transformedPoint[0] = proj(Vec4(originalPoints[0], 1) * transform);
+	newMin = transformedPoint[0];
+	newMax = transformedPoint[0];
 	
-	for (int i = 0; i < 8; ++i)
+	for (int i = 1; i < 8; ++i)
 	{
 		transformedPoint[i] = proj(Vec4(originalPoints[i], 1) * transform);
 		for (int j = 0; j < 3; ++j)
