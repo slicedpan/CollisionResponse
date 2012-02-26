@@ -27,7 +27,8 @@ public:
 	ICollidable* CollideWith(Vec3 point);
 	void DrawDebug();
 	void SetDebugDrawer(IDebugDrawer* debugDrawer);
-	inline IDebugDrawer* GetDebugDrawer() {return debugDrawer;};
+	IDebugDrawer* GetDebugDrawer() {return debugDrawer;};
+	float GetTimeStep() { return step; }
 private:
 	static PhysicsSystem * currentInstance;
 	IDebugDrawer*  debugDrawer;
@@ -36,5 +37,6 @@ private:
 	PhysicsSystem(void);
 	BroadPhase broadPhase;
 	NarrowPhase narrowPhase;
+	float step;
 };
 

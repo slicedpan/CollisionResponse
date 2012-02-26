@@ -1,5 +1,6 @@
 #include "RigidBody.h"
 #include "Contact.h"
+#include "PhysicsSystem.h"
 
 extern int numContacts;
 extern float relativeVel;
@@ -98,6 +99,7 @@ void RigidBody::ApplyContactImpulses(std::vector<Contact>& contacts, RigidBody* 
 	if (breakOnImpulse)
 		int i = 0;
 
+ 	int contactNum = contacts.size();
 	float impulse;
 	Vec3 offset1, offset2;
 	float relativeVelocity;
@@ -107,24 +109,26 @@ void RigidBody::ApplyContactImpulses(std::vector<Contact>& contacts, RigidBody* 
 	Vec3 rotationAxis1 = qAxisAngle(body1->GetAngularVelocity());
 	Vec3 rotationAxis2 = qAxisAngle(body2->GetAngularVelocity());
 	float t3, t4;
-	float restitution = 0.4f;
+	float restitution = 0.2f;
 	float friction = 0.5f;
-	Vec3 impulseVec;
+	Vec3 impulseVec(0.0, 0.0, 0.0);
 	Vec3 angularAcc;
 	Vec3 body1Impulse(0.0, 0.0, 0.0);
 	Vec3 body2Impulse(0.0, 0.0, 0.0);
 
 	Vec3 spotDistance = contacts[0].Depth * contacts[0].Normal;
-	spotDistance *= 1.001;	
+	spotDistance *= 1.000001f;	
 
-	if (len(spotDistance) > 1.0)
-		int i = 0;
+	if (dot(spotDistance, body1->GetPosition() - body2->GetPosition()) > 0.0)
+	{
+		
+	}
 
 	if (body1->IsKinematic())
 	{
 		body2->MoveBy(-spotDistance);
 	}
-	else if (body2->IsKinematic())
+	else if (body2->IsKinematic()) 
 	{
 		body1->MoveBy(spotDistance);
 	}
@@ -136,59 +140,87 @@ void RigidBody::ApplyContactImpulses(std::vector<Contact>& contacts, RigidBody* 
 
 	Vec3 avgPoint(0.0, 0.0, 0.0);
 	Vec3 avgNormal(0.0, 0.0, 0.0);
-	
-	for (int i = 0; i < contacts.size(); ++i)
+
+	Vec3 velocityDifference;
+	Vec3 transverseImpulse(0.0, 0.0, 0.0);
+
+	float maxDepth = -FLT_MAX;
+
+	for (int i = 0; i < contactNum; ++i)
 	{
 		avgPoint += contacts[i].Point;
-		avgNormal += contacts[i].Normal * contacts[i].Reversed;
-		pointVel1 += cross(rotationAxis1, contacts[i].Point - body1->GetPosition());
-		pointVel2 += cross(rotationAxis2, contacts[i].Point - body2->GetPosition());
-	}
+		contacts[i].Normal *= contacts[i].Reversed;
+		avgNormal += contacts[i].Normal;
 
-	avgPoint /= contacts.size();
-	avgNormal /= contacts.size();
-
-	contacts[0].Normal = avgNormal;
-	contacts[0].Point = avgPoint;
-	
-	for (int i = 0; i < 1; ++i)
-	{		
-		++numContacts;
 		offset1 = contacts[i].Point - body1->GetPosition();
-		offset2 = contacts[i].Point - body2->GetPosition();		
-		pointVel1 += body1->GetVelocity();
-		pointVel2 += body2->GetVelocity();
-		Vec3 velocityDifference = pointVel1 - pointVel2;
-		relativeVelocity = dot(contacts[i].Normal, velocityDifference);
-		relativeVel = relativeVelocity;
+		offset2 = contacts[i].Point - body2->GetPosition();
+		
+		if (contacts[i].Depth > maxDepth)
+			maxDepth = contacts[i].Depth;
+
+		Vec3 rotVel1 = cross(rotationAxis1, offset1);
+		Vec3 rotVel2 = cross(rotationAxis2, offset2);
+
+		velocityDifference = rotVel1 - rotVel2 + body1->GetVelocity() - body2->GetVelocity();
+
 		Vec3 transverseDir = cross(cross(contacts[i].Normal, velocityDifference), contacts[i].Normal);
 		float transverseDirLength = len(transverseDir);
-		if (transverseDirLength > 0.0001f)
+		if (transverseDirLength > 0.0000001f)
 			transverseDir /= transverseDirLength;
-		float transverseVel = dot(transverseDir, velocityDifference);
+		float transverseVel = dot(velocityDifference, transverseDir);
+
+		angularAcc = Iinv1 * cross(offset1, -transverseVel * friction * transverseDir);
+		body1->ApplyAngularImpulse(angularAcc);
+		angularAcc = Iinv2 * cross(offset2, transverseVel * friction * transverseDir);
+		body2->ApplyAngularImpulse(angularAcc);
+
+		transverseImpulse += transverseVel * friction * transverseDir;
+
+		pointVel1 += rotVel1;
+		pointVel2 += rotVel2;
+	}
+
+	avgPoint /= contactNum;
+	avgNormal /= contactNum;
+	transverseImpulse /= contactNum;
+
+	contacts[0].Normal = avgNormal;
+	contacts[0].Point = avgPoint;	
+			
+	++numContacts;
+
+	float projectedPenetration = dot(body1->GetAcceleration(), avgNormal) - dot(body2->GetAcceleration(), avgNormal);
+	projectedPenetration *= pow(PhysicsSystem::GetCurrentInstance()->GetTimeStep(), 2.0f);
+
+	if (projectedPenetration <= maxDepth + 0.0000001f)
+	{
+		offset1 = avgPoint - body1->GetPosition();
+		offset2 = avgPoint - body2->GetPosition();		
+		pointVel1 += body1->GetVelocity();
+		pointVel2 += body2->GetVelocity();
+		velocityDifference = pointVel1 - pointVel2;
+		relativeVelocity = dot(avgNormal, velocityDifference);
+		relativeVel = relativeVelocity;	
 		//relativeVelocity = 0.1f;
-		t3 = dot(contacts[i].Normal, cross((Iinv1 * cross(offset1, contacts[i].Normal)), offset1));
-		t4 = dot(contacts[i].Normal, cross((Iinv2 * cross(offset2, contacts[i].Normal)), offset2));
+		t3 = dot(avgNormal, cross((Iinv1 * cross(offset1, avgNormal)), offset1));
+		t4 = dot(avgNormal, cross((Iinv2 * cross(offset2, avgNormal)), offset2));
 
 		impulse = (-(1 + restitution) * relativeVelocity) / (body1->GetInverseMass() + body2->GetInverseMass() + t3 + t4);
-		impulseVec = impulse * contacts[i].Normal - (friction * transverseVel * transverseDir);
-
-		/*body1Impulse += impulseVec;
-		body2Impulse -= impulseVec;*/
-
-		body1->ApplyImpulse(impulseVec);
-		body2->ApplyImpulse(-impulseVec);
-
-		/*body1->ApplyForceAtPoint(-impulseVec * body1->GetInverseMass(), contacts[i].Point);
-		body2->ApplyForceAtPoint(impulseVec * body2->GetInverseMass(), contacts[i].Point);*/
-
-		angularAcc = Iinv1 * cross(offset1, -impulseVec);
-		body1->ApplyAngularImpulse(angularAcc / 2.0);
-		angularAcc = Iinv2 * cross(offset2, impulseVec);
- 		body2->ApplyAngularImpulse(angularAcc / 2.0);
+		if (impulse > 0)	//separating contact
+			impulse = 0;
+		impulse += (projectedPenetration * 2.0f);
+		if (fabs(impulse) > 0.000001f)		
+			impulseVec = impulse * avgNormal;
 	}
-	/*body1->ApplyImpulse(body1Impulse / contacts.size());
-	body2->ApplyImpulse(body2Impulse / contacts.size());*/
+	
+	body1->ApplyImpulse(impulseVec - transverseImpulse);
+	body2->ApplyImpulse(-impulseVec + transverseImpulse);	
+
+	angularAcc = Iinv1 * cross(offset1, -impulseVec);
+	body1->ApplyAngularImpulse(angularAcc / 2.0);
+	angularAcc = Iinv2 * cross(offset2, impulseVec);
+ 	body2->ApplyAngularImpulse(angularAcc / 2.0);
+	
 }
 
 void RigidBody::SetKinematic(bool kinematic)

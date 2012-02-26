@@ -50,7 +50,7 @@ public:
 	void ApplyContactImpulse(std::vector<Contact>& contacts, RigidBody* other);
 	void SetKinematic(bool kinematic);
 	bool IsKinematic() { return isKinematic; }
-	static void ApplyContactImpulses(std::vector<Contact>& contacts, RigidBody* body1, RigidBody* body2);
+	static void ApplyContactImpulses(std::vector<Contact>& contacts, RigidBody* body1, RigidBody* body2);	
 protected:
 	AABB baseBB;
 	Vec4 debugColour;	
@@ -70,7 +70,6 @@ private:
 	void GenerateRotationMatrix();	
 	float restitutionCoefficient;
 	bool isKinematic;
-
 };
 
 inline void RigidBody::SetPosition(Vec3& position)
@@ -102,7 +101,12 @@ inline Vec3& RigidBody::GetVelocity()
 }
 
 inline Vec3& RigidBody::GetPosition() {return position;}
-inline Vec3& RigidBody::GetAcceleration() {return acceleration;}
+inline Vec3& RigidBody::GetAcceleration() 
+{
+	if (isKinematic)
+		acceleration.MakeZero();
+	return acceleration;
+}
 inline Vec3& RigidBody::GetLastPosition() {return lastPosition;}
 
 inline Vec4& RigidBody::GetOrientation() {return orientation;}

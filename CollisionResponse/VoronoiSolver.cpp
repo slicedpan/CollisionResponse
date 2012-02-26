@@ -21,10 +21,14 @@ void VoronoiSolver::Check(ConvexPolyhedron* poly1, ConvexPolyhedron* poly2)
 	Triangle* tris1 = poly1->GetTriangles();
 	Vec3* points2 = poly2->GetPoints();
 
+	bool pointColliding;
+
 	for (int i = 0; i < poly2->GetNumberOfPoints(); ++i)
 	{
 		Vec3& point = points2[i];
 		float leastDepth = FLT_MAX;
+
+		pointColliding = false;
 
 		for (int j = 0; j < poly1->GetNumberOfTriangles(); ++j)
 		{
@@ -42,7 +46,7 @@ void VoronoiSolver::Check(ConvexPolyhedron* poly1, ConvexPolyhedron* poly2)
 					lastContact.Point = tri[index];
 					lastContact.Normal = point - lastContact.Point;
 					lastContact.Depth = 0.0f;
-					colliding = true;
+					pointColliding = true;
 					break;
 				}
 				continue;	//point is in vertex voronoi region of this triangle
@@ -62,7 +66,7 @@ void VoronoiSolver::Check(ConvexPolyhedron* poly1, ConvexPolyhedron* poly2)
 					lastContact.Point = edgePoint;
 					lastContact.Normal = point - edgePoint;
 					lastContact.Depth = 0.0f;
-					colliding = true;
+					pointColliding = true;
 					break;
 				}
 				continue; //point is in edge voronoi region
@@ -80,14 +84,16 @@ void VoronoiSolver::Check(ConvexPolyhedron* poly1, ConvexPolyhedron* poly2)
 					continue;
 				lastContact.Point = facePoint;
 				lastContact.Normal = tri.normal;
-				lastContact.Depth = depth;			
-				
-				colliding = true;				
+				lastContact.Depth = depth;							
+				pointColliding = true;				
 			}
 		}	
 
-		if (colliding)
+		if (pointColliding)
+		{
 			contacts.push_back(lastContact);
+			colliding = true;
+		}
 	}	
 }
 

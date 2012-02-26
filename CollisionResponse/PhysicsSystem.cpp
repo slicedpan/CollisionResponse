@@ -49,20 +49,24 @@ ICollidable* PhysicsSystem::CollideWith(Vec3 point)
 }
 
 void PhysicsSystem::Integrate(float timeStep)
-{
+{	
 	float timeSquared = timeStep * timeStep;
+	step = timeStep;
+	Vec4 avel;
+
 	for (int i = 0; i < rigidBodies.size(); ++i)
 	{
 		rigidBodies[i]->SetDebugColour(Vec4(1, 1, 1, 1));
 		if (!rigidBodies[i]->IsKinematic())
 		{
-			rigidBodies[i]->ApplyImpulse(Vec3(0, -0.001, 0)); //Gravity
+			rigidBodies[i]->ClearAcceleration();
+			rigidBodies[i]->ApplyForce(Vec3(0, -1, 0)); //Gravity
 			rigidBodies[i]->UpdatePosition((2 * rigidBodies[i]->GetPosition()) - rigidBodies[i]->GetLastPosition() + rigidBodies[i]->GetAcceleration() * timeSquared);
-			rigidBodies[i]->SetOrientation(qMultiply(rigidBodies[i]->GetOrientation(), (rigidBodies[i]->GetAngularVelocity() * timeStep)));
+			avel = rigidBodies[i]->GetAngularVelocity();			
+			rigidBodies[i]->SetOrientation(qMultiply(rigidBodies[i]->GetOrientation(), avel * timeStep));			
 			rigidBodies[i]->CalculateTransform();
 			rigidBodies[i]->CalculateBB();
-			rigidBodies[i]->OnUpdateTransform();
-			rigidBodies[i]->ClearAcceleration();
+			rigidBodies[i]->OnUpdateTransform();			
 		}
 	}	
 	broadPhase.GenerateCollisions();
@@ -78,7 +82,7 @@ void PhysicsSystem::Integrate(float timeStep)
 				nPairs.push_back(NarrowPhasePair(poly1, poly2));
 		}
 	}
-	narrowPhase.CollidePairs(nPairs);
+	narrowPhase.CollidePairs(nPairs);	
 }
 
 void PhysicsSystem::AddRigidBody(RigidBody* bodyToAdd)
