@@ -119,9 +119,9 @@ void RigidBody::ApplyContactImpulses(std::vector<Contact>& contacts, RigidBody* 
 	Vec3 spotDistance = contacts[0].Depth * contacts[0].Normal;
 	spotDistance *= 1.000001f;	
 
-	if (dot(spotDistance, body1->GetPosition() - body2->GetPosition()) > 0.0)
+	if (dot(spotDistance, body1->GetPosition() - body2->GetPosition()) < 0.0)
 	{
-		
+		spotDistance = norm(body1->GetPosition() - body2->GetPosition()) * len(spotDistance);
 	}
 
 	if (body1->IsKinematic())
