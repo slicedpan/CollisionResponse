@@ -17,14 +17,17 @@
 #include "Box.h"
 #include "DefaultDebugDrawer.h"
 #include "Tetrahedron.h"
+#include "GUIBase.h"
+#include "GUITray.h"
+#include "VarWatch.h"
 
 using namespace std;
 
 extern void DrawArrow(Vec3& point, Vec3& direction, Vec3& colour);
 
 // Initial size of graphics window.
-const int WIDTH  = 1200;
-const int HEIGHT = 800;
+const int WIDTH  = 800;
+const int HEIGHT = 600;
 
 // Current size of window.
 int width  = WIDTH;
@@ -77,7 +80,9 @@ int impulseCount = 0;
 int numContacts;
 float relativeVel = 0.0f;
 bool breakOnImpulse = false;
-bool handleMouse = true;
+bool handleMouse = false;
+
+GUIBase* gui;
 
 // This function is called to display the scene.
 
@@ -116,7 +121,8 @@ void setup()
 		keystate[i] = false;
 		lastKeystate[i] = false;
 	}
-	glutSetCursor(GLUT_CURSOR_NONE);
+	if (handleMouse)
+		glutSetCursor(GLUT_CURSOR_NONE);
 
 	for (int i = 0; i < numBoxes; ++i)
 	{
@@ -145,8 +151,13 @@ void setup()
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb.Ref());
 	glEnable(GL_LIGHT0);
 	Vec4 diffColour(1.0f, 0.3f, 0.3f, 1.0f);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffColour.Ref());
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffColour.Ref());	
 
+	gui = new GUIBase();
+	GUITray* tray = gui->CreateTray(0, 0, 0);
+	tray->AddTextBox("blah");
+	tray->AddElement(new VarWatch<float>("RelativeVel", &relativeVel, new VarPrint<float>()));
+	tray->AddElement(new VarWatch<Vec3>("Cam Pos", &camera->Position, new VarPrint<Vec3>()));
 }
 
 int lastTime = 0;
@@ -160,7 +171,10 @@ void display ()
 
 	lastTime = currentTime;
 
-	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);	
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(fovy, GLfloat(width) / GLfloat(height), nearPlane, farPlane);
 
 	++frameCounter;
 	frameTimeCount += elapsedTime;
@@ -198,6 +212,16 @@ void display ()
 	DrawArrow(origin, Vec3(0, 5, 0), Vec3(0, 1, 0));
 	DrawArrow(origin, Vec3(0, 0, 5), Vec3(0, 0, 1));
 
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(0.0, (GLdouble)width, (GLdouble)height, 0.0);
+
+	glDisable(GL_DEPTH_TEST);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	gui->Draw();
 	glutSwapBuffers();
 
 	while (glutGet(GLUT_ELAPSED_TIME) - currentTime < 16) {}	
@@ -243,6 +267,7 @@ void HandleInput()
 		else
 		{
 			handleMouse = true;
+			glutWarpPointer(width / 2, height / 2);
 			glutSetCursor(GLUT_CURSOR_NONE);
 		}
 	}
@@ -330,10 +355,7 @@ void mouseMovement (int mx, int my)
 {
    // Normalize mouse coordinates.
    xMouse = float(mx);
-   yMouse = float(my);
-
-   // Redisplay image.
-   glutPostRedisplay();
+   yMouse = float(my);   
 }
 
 // Respond to window resizing, preserving proportions.
