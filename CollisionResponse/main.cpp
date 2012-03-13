@@ -345,7 +345,7 @@ void reshapeMainWindow (int newWidth, int newHeight)
 	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(fovy, GLfloat(width) / GLfloat(height), nearPlane, farPlane);
+	glMultMatrixf(camera->GetProjectionMatrix().Ref());
 }
 
 // Display help.
