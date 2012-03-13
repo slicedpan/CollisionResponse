@@ -174,7 +174,7 @@ void display ()
 	glEnable(GL_DEPTH_TEST);	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(fovy, GLfloat(width) / GLfloat(height), nearPlane, farPlane);
+	glMultMatrixf(camera->GetProjectionMatrix().Ref());
 
 	++frameCounter;
 	frameTimeCount += elapsedTime;
